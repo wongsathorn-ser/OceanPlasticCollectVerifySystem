@@ -1,0 +1,471 @@
+================================================================================
+ OCEAN PLASTIC COLLECTION VERIFICATION SYSTEM
+ System & Functional Requirements Specification
+ ITCS525 Software and Application Development - Group 5 (Ocean)
+ Source of truth: ITCS525 Project Design Report (final version, Oct 2026)
+ Figma: https://www.figma.com/design/if70Iuf4DTrCEf8p8hjbiR/Verification-system-flow?node-id=0-1
+================================================================================
+
+HOW TO READ THIS FILE (for developers and AI coding assistants)
+--------------------------------------------------------------------------------
+- Requirement IDs: FR-x.y = functional, NFR-x = non-functional, BR-x = business
+  rule, DM-x = data model, API-x = endpoint. Refer to these IDs in commits/PRs.
+- "MUST" = required for delivery. "SHOULD" = strongly expected. "MAY" = optional.
+- The goal is ONE complete, fully working, cloud-deployed web application.
+  There are no phases or "later releases". Every feature below is in scope.
+- Anything listed in Section 11 (Out of Scope) MUST NOT be built.
+- Items marked [TEAM TO CONFIRM] are open decisions. Do not invent an answer;
+  use the stated default only if the team has not decided.
+
+
+================================================================================
+1. PURPOSE AND PROBLEM
+================================================================================
+A marine environmental operator (UN SDG 14) recovers plastic from coastal waters
+with a small fleet of boats and shoreline volunteer crews. It is paid by
+corporate sponsors PER TONNE OF VERIFIED PLASTIC. Collection data is currently
+kept in paper forms and inconsistent spreadsheets with no photo proof, no
+location, and estimated weights. The main sponsor (>$100,000/year, 25-50% of the
+budget) has formally challenged the reported totals.
+
+The system replaces spreadsheets with an auditable chain of evidence:
+  1. A crew member records each load: boat, weight (kg), material, a REQUIRED
+     photo of the scale, GPS location and time - even with no signal at sea.
+  2. A supervisor (Sponsor / Management role) checks each record against its
+     photo and VERIFIES it or REJECTS it with a reason.
+  3. Dashboards count ONLY verified weight.
+
+
+================================================================================
+2. TECHNOLOGY AND ARCHITECTURE
+================================================================================
+NFR-1  Frontend: React (single-page app, responsive). MUST work in mobile
+       browsers (Android Chrome, iOS Safari) and desktop browsers.
+NFR-2  Backend: Python FastAPI, REST API, JSON bodies (multipart for photo
+       upload).
+NFR-3  Frontend and backend run as SEPARATE services. Each has a Dockerfile;
+       local development uses Docker Compose (frontend, backend, database).
+NFR-4  Database: relational SQL database. Default: PostgreSQL.
+       [TEAM TO CONFIRM - earlier documents also mentioned MySQL]
+NFR-5  Python ORM for database access (e.g. SQLAlchemy) with migrations
+       (e.g. Alembic). [TEAM TO CONFIRM exact library]
+NFR-6  Photo storage: photos MUST NOT be stored only on the container
+       filesystem (cloud containers are ephemeral). Use object storage
+       (e.g. S3-compatible, GCS, Cloudinary, Supabase Storage) or a persistent
+       volume. The records table stores photo_url. [TEAM TO CONFIRM provider]
+NFR-7  Cloud deployment: the app MUST be deployed to the cloud and actually
+       work at a public HTTPS URL. [TEAM TO CONFIRM provider]
+NFR-8  HTTPS everywhere. Required by browsers for camera, geolocation and
+       service workers, and for secure session cookies.
+NFR-9  Frontend and backend SHOULD be served under the same site (same domain
+       via reverse proxy, e.g. app.example.com and app.example.com/api) so the
+       session cookie works without cross-site issues. If on different
+       domains: cookie SameSite=None; Secure, CORS with credentials allowed
+       for the exact frontend origin only, and CSRF protection.
+NFR-10 CI/CD SHOULD build and deploy automatically on merge to the main branch.
+       A bare skeleton SHOULD be deployed in week 1 and redeployed continuously.
+NFR-11 Every pull request is reviewed by another team member before merge.
+NFR-12 Testing: backend API tests (pytest) for every endpoint and every
+       business rule; a few end-to-end checks of the main flows.
+NFR-13 UI: follow the Figma screens (desktop 1440x900 drawn; layout MUST
+       reflow to one column on phones). Large touch targets (min ~48px) and a
+       light theme - crews use the app outdoors with wet hands.
+NFR-14 Status colours used everywhere: Pending = amber, Verified = green,
+       Rejected = red. "Saved on this phone" (not yet sent) = calm grey/blue,
+       never shown as an error.
+NFR-15 Passwords stored only as strong hashes (bcrypt or argon2). Never log
+       passwords, session ids or photos.
+
+
+================================================================================
+3. ROLES AND PERMISSIONS
+================================================================================
+Three roles. A user has exactly one role.
+
+  CREW_MEMBER          Records collections, sees own history and status.
+                       Main device: phone/tablet. Offline-first.
+  SPONSOR_MANAGEMENT   The supervisor/management side (e.g. the sponsor
+                       relationship manager). Verifies or rejects records,
+                       monitors crew, reads the fleet dashboard. Desktop, online.
+  ADMIN                Approves accounts, manages users and boats. Desktop,
+                       online. One default admin is created by seed/migration.
+
+Side navigation per role (from Figma):
+  Crew:               Home, History, (Send), Profile
+  Sponsor/Management: Fleet, Crew, Verify, Profile
+  Admin:              Requests, Users, Boats, Profile
+
+Permission matrix (backend MUST enforce; hiding UI is not enough):
+  Action                                   CREW  SPONSOR_MGMT  ADMIN
+  Register (request account)               public
+  Sign in / out, own profile               yes   yes           yes
+  Create record (own)                      yes   no            no
+  Read own records                         yes   -             -
+  Read all records / crew stats            no    yes           no*
+  Verify / reject record                   no    yes           no
+  Fleet dashboard, boat performance        no    yes           no*
+  List boats (available only)              yes   yes           yes
+  Create / edit boats                      no    no            yes
+  Approve/reject account requests          no    no            yes
+  List users, suspend/reactivate users     no    no            yes
+  (* Admin MAY be given read access later only if the team agrees; default no.)
+
+
+================================================================================
+4. DATA MODEL (4 tables)
+================================================================================
+DM-1 users
+  id              PK
+  name            text, required (full name)
+  email           text, required, unique
+  username        text, required, unique
+  password_hash   text, required
+  role            enum: CREW_MEMBER | SPONSOR_MANAGEMENT | ADMIN
+  status          enum: PENDING | ACTIVE | REJECTED | SUSPENDED
+  created_at      timestamp
+
+DM-2 boats
+  id              PK
+  code            text, required, unique (e.g. "HC-14")
+  name            text, required (e.g. "Harbor Cleaner")
+  capacity_kg     number, required, > 0
+  active          boolean (true = available for crews to choose)
+
+DM-3 records
+  id              PK
+  client_id       UUID, required, UNIQUE - generated on the phone when the
+                  record is created; used to make sync idempotent
+  record_number   text, unique, server-generated on first save
+                  (display format e.g. "REC-1043") [format TEAM TO CONFIRM]
+  boat_id         FK boats, required
+  crew_id         FK users, required (the signed-in crew member)
+  weight_kg       decimal, required, > 0
+  material        enum: PET_BOTTLES | HDPE_RIGID | FISHING_NET_ROPE |
+                        LDPE_FILM | MIXED   (exactly one per record)
+  photo_url       text, required (exactly one photo of the scale)
+  note            text, optional
+  latitude        decimal, required
+  longitude       decimal, required
+  gps_accuracy_m  decimal, required (metres)
+  recorded_at     timestamp, required - device time when the load was saved
+  status          enum: PENDING | VERIFIED | REJECTED
+  reviewed_by     FK users, nullable
+  reviewed_at     timestamp, nullable
+  reason          text, nullable (required when REJECTED)
+  created_at      timestamp - server time when the record reached the server
+
+DM-4 sessions
+  id              PK (random, unguessable session id, stored hashed or opaque)
+  user_id         FK users
+  created_at      timestamp
+  expires_at      timestamp
+
+
+================================================================================
+5. BUSINESS RULES
+================================================================================
+BR-1  A record is PENDING when it reaches the server. It then becomes VERIFIED
+      or REJECTED. These are the only transitions. VERIFIED and REJECTED are
+      final.
+BR-2  ONLY VERIFIED weight counts in any total shown as "verified", in fleet
+      totals, boat totals, crew totals and material breakdowns. Pending and
+      rejected weight MUST be shown separately (e.g. "pending") and never
+      added into verified totals.
+BR-3  Records are IMMUTABLE after they are saved. No edit, no delete, by anyone.
+      A rejected load is recorded again as a NEW record with correct evidence.
+BR-4  Rejecting requires a reason (non-empty). reviewed_by and reviewed_at are
+      set on every verify/reject.
+BR-5  Every record requires: an active boat, weight > 0, one material, one
+      photo of the scale, and a GPS location. The server MUST reject records
+      missing any of these.
+BR-6  Only boats with active = true are offered to crews. A record already
+      linked to a boat stays valid if the boat is later deactivated.
+BR-7  Users are never deleted. Suspending a user ends all their sessions and
+      blocks sign-in; their past records stay unchanged.
+BR-8  PENDING, REJECTED and SUSPENDED users cannot sign in.
+BR-9  ADMIN is never offered in the public registration role list.
+BR-10 The same client_id sent twice MUST NOT create two records (idempotent
+      sync). The second request returns the existing record.
+BR-11 A crew member can only create records as themselves (crew_id comes from
+      the session, never from the request body).
+BR-12 The crew list is NOT a ranking/league table; UI shows a note that how much
+      a person collects depends on where and when they work.
+
+
+================================================================================
+6. FUNCTIONAL REQUIREMENTS
+================================================================================
+
+--------------------------------------------------------------------------------
+FEATURE 1 - ACCOUNTS & ACCESS            Owner: Wongsathorn Sereephap
+Figma flow 01 (Sign in, Request an account, Request submitted, Approve access)
+plus Users and Profile screens
+--------------------------------------------------------------------------------
+FR-1.1 Sign in with username + password. On success the backend creates a
+       session (DM-4) and sets it in an HttpOnly, Secure cookie. On failure
+       show a generic error (do not reveal which field was wrong).
+FR-1.2 Session-based authentication (NOT JWT). Every protected API call
+       checks the session cookie and the user's role. Expired or unknown
+       session -> 401.
+FR-1.3 Session lifetime SHOULD be long enough to cover a full day at sea
+       (default 7 days, sliding) [TEAM TO CONFIRM]. Crew sign in before going
+       out so they can sync later without signing in again.
+FR-1.4 Request an account (public): full name, email, username, password
+       (min 8 characters), role = Crew Member or Sponsor / Management.
+       Creates user with status PENDING. Duplicate email/username -> clear
+       error message.
+FR-1.5 Request submitted screen: confirms the request is waiting for admin
+       approval, button back to Sign in.
+FR-1.6 Approve access (Admin): list PENDING requests (name, email, requested
+       role, time requested). Admin can change the role, then Approve
+       (-> ACTIVE) or Reject (-> REJECTED).
+FR-1.7 Users (Admin): list all accounts with role and status, search. Admin can
+       Suspend (-> SUSPENDED, ends sessions) and Reactivate (-> ACTIVE).
+       No delete.
+FR-1.8 Profile (all roles): account details, change password (requires current
+       password), log out (ends session).
+FR-1.9 One default ADMIN account is created by a seed script; credentials come
+       from environment variables, never hard-coded.
+FR-1.10 Role-check middleware/dependency used by every other feature.
+
+--------------------------------------------------------------------------------
+FEATURE 2 - RECORD A COLLECTION (incl. OFFLINE + GPS)   Owner: Masaaki Kato
+Figma flow 02 (Choose the boat, Enter collection & evidence, Collection saved)
+plus Send / "Saved on this phone" state
+--------------------------------------------------------------------------------
+FR-2.1 Choose the boat (step 1): searchable list of active boats (code, name,
+       capacity) plus "type name" search. The boat list MUST be cached on the
+       phone so it works offline.
+FR-2.2 Enter collection & evidence (step 2):
+       - Boat (pre-filled from step 1, changeable)
+       - Weight in kg (numeric, > 0, large input) - "read it from the scale"
+       - Material: exactly one of PET bottles, HDPE rigid, Fishing net / rope,
+         LDPE film, Mixed
+       - Photo of the scale: REQUIRED, exactly one, taken with the phone
+         camera (retake allowed). Reading must be readable. The photo SHOULD be
+         compressed on the device before storing/sending (e.g. max ~1600px,
+         JPEG).
+       - Note: optional
+       - GPS: latitude, longitude, accuracy taken automatically from the
+         browser Geolocation API and shown on screen before saving. Location
+         permission is REQUIRED; if denied or unavailable, explain how to
+         enable it and do not allow saving. GPS works without mobile data.
+       - recorded_at = device time at save.
+       - client_id = new UUID generated on the phone.
+FR-2.3 Collection saved screen: shows boat, weight, material, status, buttons
+       "Add another" and "Back to home".
+       - With signal: record is uploaded immediately, gets record_number and
+         status PENDING; screen shows them.
+       - Without signal: shows "Saved on this phone - will be sent when there
+         is signal".
+FR-2.4 OFFLINE-FIRST (MANDATORY):
+       - EVERY record (with its photo as a Blob) is written to IndexedDB on
+         the phone BEFORE any network call.
+       - A service worker caches the app shell so the app opens with no
+         signal (PWA, installable to home screen).
+       - Local states: SAVED_ON_PHONE -> SENDING -> SENT (server confirmed).
+         Failed send returns to SAVED_ON_PHONE.
+       - A local record is deleted from the phone ONLY after the server
+         confirms it (returns record id/record_number).
+FR-2.5 Sync triggers: after each save, when the app opens, on the browser
+       "online" event, and manual "Send" button. Do NOT rely on Background
+       Sync (not supported on iOS Safari).
+FR-2.6 Send screen: number of records still on the phone, "Send all" button,
+       progress, per-record result. If the session has expired, prompt to sign
+       in again; records stay on the phone and nothing is lost.
+FR-2.7 Upload is idempotent by client_id (BR-10), so retries after a weak
+       signal are safe.
+FR-2.8 Once confirmed, the record appears as PENDING in My history and in the
+       supervisor's verification queue.
+
+--------------------------------------------------------------------------------
+FEATURE 3 - CREW HOME & HISTORY        Owner: Kaung Khant Paing
+Figma flows 03 (Track collection status, crew) and 05 (Monitor crew activity,
+Sponsor / Management)
+--------------------------------------------------------------------------------
+FR-3.1 Personal dashboard (crew Home): greeting, today's total kg, this month's
+       total, number of records pending, recent records, "Add a collection"
+       shortcut, and count of records still on the phone. Show verified and
+       pending clearly separated (BR-2).
+FR-3.2 My history: all of the crew member's records, newest first, filter
+       All / Pending / Verified / Rejected. Records still on the phone are
+       shown with the "Saved on this phone" state.
+FR-3.3 Collection record (detail): photo of the scale, record number, boat,
+       weight, material, note, GPS location (coordinates and/or small map),
+       recorded_at, reviewed_at, status. If REJECTED: banner with who rejected
+       it and the reason, and advice to record the load again. Read-only.
+FR-3.4 Crew overview (Sponsor / Management): search crew members; for each:
+       verified total, % of their recorded weight that is verified, number of
+       records, last record. Not a ranking (BR-12).
+FR-3.5 Crew member details (Sponsor / Management): verified total, records
+       this month, pending weight, boats worked on (with verified kg per boat),
+       recent records; each record opens the Collection record screen.
+
+--------------------------------------------------------------------------------
+FEATURE 4 - VERIFICATION               Owner: Hein Thant Si Thu
+Figma flow 04 (Pending queue, Review record, Reject record, Decision history)
+--------------------------------------------------------------------------------
+FR-4.1 Pending queue: tab "To verify (n)" listing PENDING records (record,
+       boat, crew, recorded time, weight, material), summary of weight waiting,
+       a "Review" action per row. Oldest first.
+FR-4.2 Review record: photo of the scale shown large next to boat, collector,
+       material, recorded weight, GPS location and recorded time. Buttons
+       "Verify <weight> kg" and "Reject".
+FR-4.3 Reject with a reason: dialog with quick reasons ("Scale not readable",
+       "Wrong boat", "Weight does not match") plus a required free-text note.
+       Confirm sets REJECTED, reason, reviewed_by, reviewed_at.
+FR-4.4 Verify sets VERIFIED, reviewed_by, reviewed_at. Only PENDING records can
+       be verified/rejected; a second decision returns 409 Conflict (protects
+       against two supervisors deciding at the same time).
+FR-4.5 Decision history: tab "Verified (n)" listing verified and rejected
+       records with status, reviewer, date and reason.
+
+--------------------------------------------------------------------------------
+FEATURE 5 - FLEET & BOATS              Owner: Natthachaimongkol Chayopathum
+Figma flow 06 (Fleet overview, Boat performance, Supporting evidence) plus
+Boats and Add a boat screens
+--------------------------------------------------------------------------------
+FR-5.1 Fleet overview (Sponsor / Management): period switch "This month" /
+       "This year"; fleet summary (verified tonnes, pending tonnes, number of
+       records, number of boats); boats listed most-verified first with
+       verified total; "Verified by material" breakdown; shortcut "n records
+       are waiting for you -> Open verification".
+FR-5.2 Boat performance: one boat's verified weight, number of records,
+       pending weight, number of crew, material breakdown ("what this boat
+       brings in"), recent records. Each record opens Collection record, so
+       every total can be traced back to its evidence.
+FR-5.3 Boats (Admin): list all boats with code, name, capacity, available
+       (active) flag; edit; activate/deactivate.
+FR-5.4 Add a boat (Admin): code (unique), name, capacity in kg, available
+       checkbox.
+FR-5.5 All totals in this feature follow BR-2 (verified only; pending shown
+       separately).
+
+
+================================================================================
+7. API (suggested; prefix /api)       Auth = session cookie unless "public"
+================================================================================
+Auth / accounts (Feature 1)
+  POST   /api/auth/register            public    create PENDING user
+  POST   /api/auth/login               public    set session cookie
+  POST   /api/auth/logout              any       end session
+  GET    /api/auth/me                  any       current user + role
+  POST   /api/auth/change-password     any
+  GET    /api/admin/requests           ADMIN     pending users
+  POST   /api/admin/requests/{id}/approve  ADMIN body: {role}
+  POST   /api/admin/requests/{id}/reject   ADMIN
+  GET    /api/admin/users              ADMIN     ?search=
+  POST   /api/admin/users/{id}/suspend     ADMIN
+  POST   /api/admin/users/{id}/reactivate  ADMIN
+Boats (Feature 5 / used by Feature 2)
+  GET    /api/boats                    any       ?active=true default for crew
+  POST   /api/boats                    ADMIN
+  PATCH  /api/boats/{id}               ADMIN
+Records (Features 2, 3)
+  POST   /api/records                  CREW      multipart: photo + fields
+                                                  incl. client_id; idempotent
+  GET    /api/records/mine             CREW      ?status=
+  GET    /api/records/{id}             CREW(own) / SPONSOR_MGMT
+  GET    /api/photos/{id}              auth'd    or signed URL from storage
+Verification (Feature 4)
+  GET    /api/verify/queue             SPONSOR_MGMT
+  GET    /api/verify/history           SPONSOR_MGMT
+  POST   /api/records/{id}/verify      SPONSOR_MGMT
+  POST   /api/records/{id}/reject      SPONSOR_MGMT  body: {reason}
+Dashboards (Features 3, 5)
+  GET    /api/me/summary               CREW      today/month/pending
+  GET    /api/crew                     SPONSOR_MGMT  ?search=&period=
+  GET    /api/crew/{id}                SPONSOR_MGMT
+  GET    /api/fleet/summary            SPONSOR_MGMT  ?period=month|year
+  GET    /api/fleet/boats/{id}         SPONSOR_MGMT  ?period=
+
+Error format: {"detail": "<human-readable message>"} with correct HTTP codes
+(400 validation, 401 not signed in, 403 wrong role, 404, 409 conflict).
+
+
+================================================================================
+8. NON-FUNCTIONAL REQUIREMENTS (additional)
+================================================================================
+NFR-16 Offline reliability: no record is ever lost between capture and server
+       confirmation (Feature 2).
+NFR-17 Usability: a crew member can record a load in under ~1 minute; error
+       messages say what is wrong and how to fix it.
+NFR-18 Performance: dashboards SHOULD load in under ~2 s for demo-sized data.
+NFR-19 Security: role checks on every endpoint (Section 3), parameterised
+       queries via ORM, upload size/type limits on photos (image types only,
+       e.g. max 10 MB), rate limiting on login SHOULD exist.
+NFR-20 Configuration via environment variables (DB URL, storage keys, session
+       secret, admin seed). No secrets in the repository.
+NFR-21 Demo/seed data: boats (e.g. HC-14 Harbor Cleaner, SH-02 Sea Harvest,
+       RM-07 River Mouth, SL-03 Shoreline Team A), users of each role, records
+       in all three statuses - so the deployed app can be demonstrated.
+
+
+================================================================================
+9. ACCEPTANCE CHECKS (main end-to-end scenarios)
+================================================================================
+AC-1 New user requests account -> cannot sign in -> admin approves with role
+     -> user signs in and sees the navigation for that role.
+AC-2 Crew (airplane mode on) records 3 loads with photo + GPS -> all show
+     "Saved on this phone" -> turn signal on -> records upload automatically or
+     via Send -> each gets a record number and PENDING; none duplicated even
+     if Send is pressed twice.
+AC-3 Supervisor verifies one record and rejects one with a reason -> crew sees
+     VERIFIED and REJECTED (with reason) in My history.
+AC-4 Fleet and boat totals increase ONLY by the verified record's weight.
+AC-5 Admin suspends a user -> that user is signed out and cannot sign in; their
+     records remain visible to the supervisor.
+AC-6 Crew member cannot call supervisor/admin endpoints (403).
+AC-7 The app runs at a public HTTPS URL in the cloud with persistent photos
+     (photos still load after a backend restart/redeploy).
+
+
+================================================================================
+10. TEAM OWNERSHIP AND PLAN
+================================================================================
+Each owner builds their feature end to end: React screens + FastAPI endpoints
++ the tables/queries behind it.
+  Feature 1 Accounts & access ........ Wongsathorn Sereephap (also repo, Docker,
+                                       session auth, shared middleware first)
+  Feature 2 Record a collection ...... Masaaki Kato (incl. GPS, offline, sync)
+  Feature 3 Crew home & history ...... Kaung Khant Paing
+  Feature 4 Verification ............. Hein Thant Si Thu
+  Feature 5 Fleet & boats ............ Natthachaimongkol Chayopathum
+Plan (4 weeks):
+  Week 1  repository, DB schema (4 tables), app shell with role-based
+          navigation, shared UI components from Figma, session auth,
+          first cloud deployment.
+  Week 2  each owner: API + main screen of their feature.
+  Week 3  remaining screens, empty and error states.
+  Week 4  integration, testing, demo data, final deployment.
+
+
+================================================================================
+11. OUT OF SCOPE (do NOT build)
+================================================================================
+- QR boat labels (boats are chosen from a searchable list / typed name)
+- Official weigh-station tickets (evidence = photo of the scale + supervisor
+  check)
+- Anonymous / no-account recording (every user, incl. volunteers, has an
+  approved account)
+- Payments of any kind (no recording, processing or transfer)
+- Hardware / IoT integrations (scale drivers, vessel GPS hardware) - phone GPS
+  is used instead
+- Native iOS / Android apps (responsive web app / PWA only)
+- APIs to external recycling-partner systems
+- Migration of old spreadsheet data
+- Long-term support after the course ends
+- Trips / crew-aboard picker, multiple photos per load, weight-source field,
+  charts beyond the material breakdown bars, CSV export
+
+
+================================================================================
+12. OPEN DECISIONS [TEAM TO CONFIRM]
+================================================================================
+- Cloud provider and domain (NFR-7, NFR-9) [To be confirm]
+- Database engine: PostgreSQL (default) vs MySQL (NFR-4) [MySQL]
+- Photo storage provider (NFR-6) [As binary in MySQL, if not support store as base64]
+- Session lifetime (FR-1.3) [7 days]
+- Record number format (DM-3)
+- Whether Admin gets read access to dashboards (Section 3, default no)
+================================================================================

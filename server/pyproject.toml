@@ -1,0 +1,20 @@
+[project]
+name = "ocean-server"
+version = "0.1.0"
+description = "FastAPI backend - Ocean Plastic Collection Verification System (ITCS525 Group 5)"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.135.0,<1",
+    "psycopg2-binary>=2.9.13",
+    "sqlmodel>=0.0.48",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+# Run `python -m pytest` from the server/ folder (or inside the backend container).
+testpaths = ["tests"]
+pythonpath = ["."]

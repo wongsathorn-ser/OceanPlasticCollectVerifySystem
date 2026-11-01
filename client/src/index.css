@@ -1,0 +1,10 @@
+/* SHARED FILE - global styles. Use Tailwind utility classes in components
+   instead of adding CSS here (Tailwind lecture, W7). */
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  /* Light theme only - crews use the app outdoors (NFR-13). */
+  color-scheme: light;
+}

@@ -1,0 +1,25 @@
+# Keep LF line endings in the repository AND in every working copy.
+# Why: teammates use Windows and macOS. Mixed CRLF/LF creates whole-file diffs
+# (fake merge conflicts), and a CRLF entrypoint.sh breaks the Linux container.
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binary files - never touch line endings
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.woff  binary
+*.woff2 binary
+
+# Generated lock files - collapsed in GitHub pull request diffs
+package-lock.json linguist-generated=true
+uv.lock           linguist-generated=true
+requirements.txt  linguist-generated=true

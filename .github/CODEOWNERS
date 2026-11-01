@@ -1,0 +1,35 @@
+# CODEOWNERS - GitHub automatically asks the owner of a folder to review any
+# pull request that touches it, and shows the professor who owns what.
+#
+# TODO (project lead): replace each @...-github placeholder with the member's real
+# GitHub username, remove the leading "# " from the rule lines, then enable
+# "Require review from Code Owners" in the branch protection rule (optional).
+# Later lines win when several patterns match the same file.
+
+# ---------- Shared files (repo setup, Docker, CI, app shell) - project lead ----------
+# *                                       @wongsathorn-github
+
+# ---------- F1 Accounts & access - Wongsathorn Sereephap ----------
+# /server/app/features/f1_accounts/       @wongsathorn-github
+# /server/tests/f1_accounts/              @wongsathorn-github
+# /client/src/features/f1_accounts/       @wongsathorn-github
+
+# ---------- F2 Record a collection - Masaaki Kato ----------
+# /server/app/features/f2_record_collection/   @masaaki-github
+# /server/tests/f2_record_collection/          @masaaki-github
+# /client/src/features/f2_record_collection/   @masaaki-github
+
+# ---------- F3 Crew home & history - Kaung Khant Paing ----------
+# /server/app/features/f3_crew_history/   @kaungkhant-github
+# /server/tests/f3_crew_history/          @kaungkhant-github
+# /client/src/features/f3_crew_history/   @kaungkhant-github
+
+# ---------- F4 Verification - Hein Thant Si Thu ----------
+# /server/app/features/f4_verification/   @heinthant-github
+# /server/tests/f4_verification/          @heinthant-github
+# /client/src/features/f4_verification/   @heinthant-github
+
+# ---------- F5 Fleet & boats - Natthachaimongkol Chayopathum ----------
+# /server/app/features/f5_fleet_boats/    @natthachaimongkol-github
+# /server/tests/f5_fleet_boats/           @natthachaimongkol-github
+# /client/src/features/f5_fleet_boats/    @natthachaimongkol-github

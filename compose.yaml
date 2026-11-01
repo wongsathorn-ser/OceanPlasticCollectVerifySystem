@@ -1,0 +1,63 @@
+# Local development stack: database + backend + frontend (NFR-3).
+#   docker compose up --build        start everything
+#   docker compose down              stop (keeps the database volume)
+#   docker compose down -v           stop AND delete the database data
+# Values come from .env (copy .env.example); the defaults below match the class labs.
+# Render does not use this file (see docs/DEPLOYMENT.md).
+
+services:
+  database:
+    # PostgreSQL for now (docs/DECISIONS.md D1). MySQL alternative from the
+    # W9 Docker lab: image mysql:8.4, port 3306, volume /var/lib/mysql.
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+    ports:
+      - "127.0.0.1:54242:5432"   # optional: lets a DB client on your computer connect
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  backend:
+    build: ./server
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: dev
+      # the backend reaches the database by its service name, not localhost
+      DATABASE_URL: postgresql://${POSTGRES_USER:-appuser}:${POSTGRES_PASSWORD:-password}@database:5432/${POSTGRES_DB:-appdb}
+      COOKIE_SECURE: "false"
+      WATCHFILES_FORCE_POLLING: "true"   # hot reload on Windows/macOS bind mounts
+    ports:
+      - "34242:5000"
+    volumes:
+      - ./server/app:/app/app
+      - ./server/tests:/app/tests
+    depends_on:
+      database:
+        condition: service_healthy
+
+  frontend:
+    build: ./client
+    environment:
+      VITE_PROXY_TARGET: http://backend:5000
+      VITE_USE_POLLING: "true"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules   # keep the container's own node_modules
+    depends_on:
+      - backend
+
+volumes:
+  dbdata:
