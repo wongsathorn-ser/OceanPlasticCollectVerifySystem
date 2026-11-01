@@ -14,6 +14,7 @@ How to fill a row: what you asked (short prompt summary, no secrets), what you k
 
 | Date | Tool | What I asked | What I used | How I verified |
 |---|---|---|---|---|
+| 2026-11-01 | Claude (Cowork) | Build the F1 frontend screens from Figma (Sign in, Create an account, Request sent, Account requests, Users, Profile) with mock data, no backend yet | All F1 frontend files (pages, components, `api.js` + `mockAccounts.js`, `AuthProvider`) and the `AuthProvider` line in `main.jsx` | `npm run lint` + `npm run build`; clicked through the flows in a browser (validation, register → approve → sign in, suspend/reactivate, change password, log out) on desktop and phone width |
 
 ## F2 · Record a collection (Masaaki Kato)
 
