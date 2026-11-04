@@ -1,46 +1,50 @@
 // F1 · Accounts & access - API calls (owner: Wongsathorn Sereephap).
 //
-// NOW:   every function is answered by the in-memory mock (./mockAccounts.js),
-//        so the screens work without the backend.
-// LATER: replace each body with the apiFetch call written above it, e.g.
-//          import { apiFetch } from '../../shared/api/client.js'
-//          export const login = (username, password) =>
-//            apiFetch('/auth/login', { method: 'POST', body: { username, password } })
-//        The pages only call these functions, so they will not need to change.
-import * as mock from './mockAccounts.js'
+// Every F1 page gets its data through these functions only. They call the
+// FastAPI backend (server/app/features/f1_accounts/router.py) with the shared
+// apiFetch helper, which sends the session cookie and turns {"detail": ...}
+// errors into ApiError (err.status, err.detail).
+import { apiFetch } from '../../shared/api/client.js'
 
-// Shows the "demo accounts" hint on the sign-in page while there is no backend.
-export const USING_MOCK_DATA = true
+// Shows the "demo accounts" hint on the sign-in page. The backend keeps its
+// data in memory with seeded demo users until the database exists.
+export const SHOW_DEMO_ACCOUNTS = true
 
-// POST /api/auth/login {username, password} -> user, sets the session cookie (FR-1.1)
-export const login = (username, password) => mock.login(username, password)
+// ---------- /api/auth ----------
 
-// POST /api/auth/logout -> ends the session (FR-1.8)
-export const logout = () => mock.logout()
+// FR-1.1: returns the user and sets the HttpOnly session cookie
+export const login = (username, password) => apiFetch('/auth/login', { method: 'POST', body: { username, password } })
 
-// GET /api/auth/me -> signed-in user, or 401 when nobody is signed in (FR-1.2)
-export const getMe = () => mock.getMe()
+// FR-1.8: ends the session
+export const logout = () => apiFetch('/auth/logout', { method: 'POST' })
 
-// POST /api/auth/register {name, email, username, password, role} -> PENDING user (FR-1.4)
-export const register = (form) => mock.register(form)
+// FR-1.2: signed-in user, or ApiError 401 when nobody is signed in
+export const getMe = () => apiFetch('/auth/me')
 
-// POST /api/auth/change-password {current_password, new_password} (FR-1.8)
-export const changePassword = (currentPassword, newPassword) => mock.changePassword(currentPassword, newPassword)
+// FR-1.4: creates a PENDING account. form = {name, email, username, password, role}
+export const register = (form) => apiFetch('/auth/register', { method: 'POST', body: form })
 
-// GET /api/admin/requests -> PENDING users (FR-1.6)
-export const listAccountRequests = () => mock.listAccountRequests()
+// FR-1.8
+export const changePassword = (currentPassword, newPassword) =>
+  apiFetch('/auth/change-password', {
+    method: 'POST',
+    body: { current_password: currentPassword, new_password: newPassword },
+  })
 
-// POST /api/admin/requests/{id}/approve {role} (FR-1.6)
-export const approveRequest = (id, role) => mock.approveRequest(id, role)
+// ---------- /api/admin (ADMIN only) ----------
 
-// POST /api/admin/requests/{id}/reject (FR-1.6)
-export const rejectRequest = (id) => mock.rejectRequest(id)
+// FR-1.6: PENDING users, newest first
+export const listAccountRequests = () => apiFetch('/admin/requests')
 
-// GET /api/admin/users (FR-1.7) - search is done on the page for now; later ?search=
-export const listUsers = () => mock.listUsers()
+// FR-1.6: the admin may correct the requested role
+export const approveRequest = (id, role) => apiFetch(`/admin/requests/${id}/approve`, { method: 'POST', body: { role } })
 
-// POST /api/admin/users/{id}/suspend (FR-1.7, BR-7)
-export const suspendUser = (id) => mock.suspendUser(id)
+export const rejectRequest = (id) => apiFetch(`/admin/requests/${id}/reject`, { method: 'POST' })
 
-// POST /api/admin/users/{id}/reactivate (FR-1.7)
-export const reactivateUser = (id) => mock.reactivateUser(id)
+// FR-1.7: everyone except PENDING requests (the page filters while you type)
+export const listUsers = () => apiFetch('/admin/users')
+
+// FR-1.7, BR-7: also signs the person out everywhere
+export const suspendUser = (id) => apiFetch(`/admin/users/${id}/suspend`, { method: 'POST' })
+
+export const reactivateUser = (id) => apiFetch(`/admin/users/${id}/reactivate`, { method: 'POST' })

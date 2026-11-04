@@ -15,6 +15,7 @@ How to fill a row: what you asked (short prompt summary, no secrets), what you k
 | Date | Tool | What I asked | What I used | How I verified |
 |---|---|---|---|---|
 | 2026-11-01 | Claude (Cowork) | Build the F1 frontend screens from Figma (Sign in, Create an account, Request sent, Account requests, Users, Profile) with mock data, no backend yet | All F1 frontend files (pages, components, `api.js` + `mockAccounts.js`, `AuthProvider`) and the `AuthProvider` line in `main.jsx` | `npm run lint` + `npm run build`; clicked through the flows in a browser (validation, register → approve → sign in, suspend/reactivate, change password, log out) on desktop and phone width |
+| 2026-11-04 | Claude (Cowork) | Build the F1 backend with in-memory storage (no database yet) and connect the F1 screens to it; rename the demo admin to `admin`; match the Figma colours | F1 router, schemas, service, dependencies (`get_current_user`, `require_role`), `memory_store.py`, seed, tests; `api.js` now calls the API; `main.py` starts without a database | `pytest` (14 F1 tests), `npm run lint` + `npm run build`, browser test of every flow against the running backend |
 
 ## F2 · Record a collection (Masaaki Kato)
 

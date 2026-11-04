@@ -2,7 +2,7 @@
 // Figma: 01 Sign in | Spec: FR-1.1, FR-1.2, FR-1.3, BR-8
 import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { USING_MOCK_DATA } from '../api.js'
+import { SHOW_DEMO_ACCOUNTS } from '../api.js'
 import { AuthContext } from '../authContext.js'
 import Alert from '../components/Alert.jsx'
 import AuthLayout from '../components/AuthLayout.jsx'
@@ -90,7 +90,7 @@ export default function SignInPage() {
         New accounts can sign in once an administrator has approved them.
       </p>
 
-      {USING_MOCK_DATA && <MockAccountsHint />}
+      {SHOW_DEMO_ACCOUNTS && <MockAccountsHint />}
     </AuthLayout>
   )
 }

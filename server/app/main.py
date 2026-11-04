@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import OperationalError
 from sqlmodel import text
 
 from app.core import config
@@ -28,7 +29,12 @@ from app.features.f5_fleet_boats.router import router as f5_fleet_boats_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # start up: create any missing tables (same approach as the ORM lecture)
-    create_db_and_tables()
+    try:
+        create_db_and_tables()
+    except OperationalError:
+        # No database running yet: keep the API up so features that store data
+        # in memory for now (F1) still work. /api/health/db shows the DB status.
+        print("WARNING: database not reachable - starting without it.")
     yield
     # shutdown: nothing to clean up yet
 
