@@ -90,3 +90,21 @@ Faster hot reload on Windows: keep the database in Docker (`docker compose up -d
 4. Merge – Render redeploys `main` automatically
 
 Details in [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
+
+## AI Declaration
+
+This project follows the ITCS525 AI policy (**AI Usage Level 4**: AI tools are allowed). Group 5 – Ocean declares the following.
+
+**AI tools used**
+
+| Tool | Provider | Used for |
+|---|---|---|
+| Claude (Cowork) | Anthropic | Generating the repository template (folder structure, FastAPI / SQLModel / PostgreSQL backend skeleton, React / Tailwind / React Router frontend skeleton, Docker Compose, GitHub Actions CI, documentation) and building the F1 Accounts & access frontend screens from the Figma design, with mock data |
+
+**Extent of AI use**
+
+- **AI-assisted coding.** AI generated first drafts of code and documentation. Members then reviewed, tested, corrected and integrated the result.
+- **Not done by AI.** The requirements, the system design, the Figma UI design, the team's technical decisions and the project management were done by the team.
+- **Understanding.** Every member understands the code they commit and can explain it. We do not commit code we cannot explain.
+- **Verification.** AI output is checked before it is merged: backend tests (pytest), frontend lint (oxlint) and build, running the app through Docker Compose, manual click-through in a browser, and one other member's review on every pull request.
+- **Responsible use.** No passwords, secrets or personal data are put into AI prompts. Each member is responsible for the correctness, security and licensing of the code they submit.
