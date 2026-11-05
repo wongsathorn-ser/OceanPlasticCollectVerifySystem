@@ -17,10 +17,10 @@ Each member owns one feature end to end: React screens, FastAPI endpoints and th
 | Feature | Branch | Owner | Backend | Frontend | Tests | Figma |
 |---|---|---|---|---|---|---|
 | F1 Accounts & access (+ repo, Docker, auth setup) | `features/account-and-access` | Wongsathorn Sereephap | [`f1_accounts`](server/app/features/f1_accounts) | [`f1_accounts`](client/src/features/f1_accounts) | [`f1_accounts`](server/tests/f1_accounts) | Flow 01, Users, Profile |
-| F2 Record a collection (offline + GPS) | `record-collections` | Masaaki Kato | [`f2_record_collection`](server/app/features/f2_record_collection) | [`f2_record_collection`](client/src/features/f2_record_collection) | [`f2_record_collection`](server/tests/f2_record_collection) | Flow 02 |
-| F3 Crew home & history | `crew-and-home-history` | Kaung Khant Paing | [`f3_crew_history`](server/app/features/f3_crew_history) | [`f3_crew_history`](client/src/features/f3_crew_history) | [`f3_crew_history`](server/tests/f3_crew_history) | Flows 03, 05 |
-| F4 Verification | `verification` | Hein Thant Si Thu | [`f4_verification`](server/app/features/f4_verification) | [`f4_verification`](client/src/features/f4_verification) | [`f4_verification`](server/tests/f4_verification) | Flow 04 |
-| F5 Fleet & boats | `fleet-and-boats` | Natthachaimongkol Chayopathum | [`f5_fleet_boats`](server/app/features/f5_fleet_boats) | [`f5_fleet_boats`](client/src/features/f5_fleet_boats) | [`f5_fleet_boats`](server/tests/f5_fleet_boats) | Flow 06, Boats, Add a boat |
+| F2 Record a collection (offline + GPS) | `features/record-collections` | Masaaki Kato | [`f2_record_collection`](server/app/features/f2_record_collection) | [`f2_record_collection`](client/src/features/f2_record_collection) | [`f2_record_collection`](server/tests/f2_record_collection) | Flow 02 |
+| F3 Crew home & history | `features/crew-and-home-history` | Kaung Khant Paing | [`f3_crew_history`](server/app/features/f3_crew_history) | [`f3_crew_history`](client/src/features/f3_crew_history) | [`f3_crew_history`](server/tests/f3_crew_history) | Flows 03, 05 |
+| F4 Verification | `features/verification` | Hein Thant Si Thu | [`f4_verification`](server/app/features/f4_verification) | [`f4_verification`](client/src/features/f4_verification) | [`f4_verification`](server/tests/f4_verification) | Flow 04 |
+| F5 Fleet & boats | `features/fleet-and-boats` | Natthachaimongkol Chayopathum | [`f5_fleet_boats`](server/app/features/f5_fleet_boats) | [`f5_fleet_boats`](client/src/features/f5_fleet_boats) | [`f5_fleet_boats`](server/tests/f5_fleet_boats) | Flow 06, Boats, Add a boat |
 
 Every feature folder has its own `README.md` listing its screens, endpoints, tables and rules.
 
