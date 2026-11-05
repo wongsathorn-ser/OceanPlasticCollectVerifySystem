@@ -1,13 +1,27 @@
-// F5 · Fleet & boats - API calls (owner: Natthachaimongkol Chayopathum).
-// TODO(F5): one function per endpoint, all through the shared apiFetch:
-//
-//   import { apiFetch } from '../../shared/api/client.js'
-//   export const getFleetSummary = (period) =>
-//     apiFetch(`/fleet/summary?period=${period}`)
-//
-// Endpoints (paths after /api, see docs/requirements/system_requirements.txt section 7):
-//   GET /boats
-//   POST /boats
-//   PATCH /boats/{id}
-//   GET /fleet/summary?period=month|year
-//   GET /fleet/boats/{id}?period=
+import { apiFetch } from '../../shared/api/client.js'
+
+export async function getBoats() {
+  return apiFetch('/boats')
+}
+
+export async function createBoat(boatData) {
+  return apiFetch('/boats', {
+    method: 'POST',
+    body: boatData,
+  })
+}
+
+export async function updateBoat(boatId, boatData) {
+  return apiFetch(`/boats/${boatId}`, {
+    method: 'PATCH',
+    body: boatData,
+  })
+}
+
+export async function getFleetSummary(period = 'month') {
+  return apiFetch(`/fleet/summary?period=${period}`)
+}
+
+export async function getFleetBoat(boatId, period = 'month') {
+  return apiFetch(`/fleet/boats/${boatId}?period=${period}`)
+}
