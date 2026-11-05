@@ -99,7 +99,7 @@ This project follows the ITCS525 AI policy (**AI Usage Level 4**: AI tools are a
 
 | Tool | Provider | Used for |
 |---|---|---|
-| Claude (Cowork) | Anthropic | Generating the repository template (folder structure, FastAPI / SQLModel / PostgreSQL backend skeleton, React / Tailwind / React Router frontend skeleton, Docker Compose, GitHub Actions CI, documentation) and building the F1 Accounts & access frontend screens from the Figma design, with mock data |
+| Claude (Cowork) | Anthropic | Generating the repository template (folder structure, FastAPI / SQLModel / PostgreSQL backend skeleton, React / Tailwind / React Router frontend skeleton, Docker Compose, GitHub Actions CI, documentation) and building mock data |
 
 **Extent of AI use**
 
