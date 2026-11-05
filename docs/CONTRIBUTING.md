@@ -4,7 +4,7 @@ Goal: five people working in parallel with **no merge conflicts**, and a history
 
 ## 1. Stay in your own folders
 
-| Feature | Owner | Your folders |
+| Feature | Owner | Folders |
 |---|---|---|
 | F1 Accounts & access | Wongsathorn Sereephap | `server/app/features/f1_accounts/`, `server/tests/f1_accounts/`, `client/src/features/f1_accounts/` |
 | F2 Record a collection | Masaaki Kato | `server/app/features/f2_record_collection/`, `server/tests/f2_record_collection/`, `client/src/features/f2_record_collection/` |
