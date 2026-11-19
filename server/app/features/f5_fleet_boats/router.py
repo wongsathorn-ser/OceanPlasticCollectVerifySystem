@@ -1,11 +1,13 @@
 """Feature 5 - Fleet & boats: API routes.
 
-Temporary mock API for F5 development.
+Fleet & boats API backed by PostgreSQL through SQLModel.
 
 Owner: Natthachaimongkol Chayopathum
 """
 
 from fastapi import APIRouter, HTTPException, Query
+
+from app.core.database import SessionDep
 
 from .schemas import (
     BoatCreate,
@@ -31,21 +33,37 @@ router = APIRouter(
 
 
 @router.get("/boats", response_model=list[BoatOut])
-def list_boats():
+def list_boats(db: SessionDep):
     """Return all boats."""
-    return get_boats()
+    return get_boats(db)
 
 
 @router.post("/boats", response_model=BoatOut, status_code=201)
-def add_boat(boat: BoatCreate):
+def add_boat(boat: BoatCreate, db: SessionDep):
     """Create a new boat."""
-    return create_boat(boat.model_dump())
+    created = create_boat(
+        db,
+        boat.model_dump(),
+    )
+
+    if created is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Boat code already exists.",
+        )
+
+    return created
 
 
 @router.patch("/boats/{boat_id}", response_model=BoatOut)
-def edit_boat(boat_id: int, boat: BoatUpdate):
+def edit_boat(
+    boat_id: int,
+    boat: BoatUpdate,
+    db: SessionDep,
+):
     """Update an existing boat."""
     updated = update_boat(
+        db,
         boat_id,
         boat.model_dump(exclude_unset=True),
     )
@@ -59,9 +77,9 @@ def edit_boat(boat_id: int, boat: BoatUpdate):
     return updated
 
 
-
 @router.get("/fleet/summary", response_model=FleetSummaryOut)
 def fleet_summary(
+    db: SessionDep,
     period: str = Query(default="month"),
 ):
     """Return fleet summary for the selected period."""
@@ -72,7 +90,10 @@ def fleet_summary(
             detail="Period must be 'month' or 'year'.",
         )
 
-    summary = get_fleet_summary(period)
+    summary = get_fleet_summary(
+        db,
+        period,
+    )
 
     if summary is None:
         raise HTTPException(
@@ -89,6 +110,7 @@ def fleet_summary(
 )
 def fleet_boat(
     boat_id: int,
+    db: SessionDep,
     period: str = Query(default="month"),
 ):
     """Return performance information for one boat."""
@@ -100,6 +122,7 @@ def fleet_boat(
         )
 
     performance = get_boat_performance(
+        db,
         boat_id,
         period,
     )

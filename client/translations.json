@@ -1,1007 +1,1007 @@
 {
   "language.label": {
     "eng_word": "Language",
-    "th_word": "",
+    "th_word": "ภาษา",
     "burmese_word": ""
   },
   "language.english": {
     "eng_word": "English",
-    "th_word": "",
+    "th_word": "ภาษาอังกฤษ",
     "burmese_word": ""
   },
   "language.thai": {
     "eng_word": "Thai",
-    "th_word": "",
+    "th_word": "ภาษาไทย",
     "burmese_word": ""
   },
   "language.burmese": {
     "eng_word": "Burmese",
-    "th_word": "",
+    "th_word": "ภาษาพม่า",
     "burmese_word": ""
   },
   "language.switch_hint": {
     "eng_word": "Choose your language",
-    "th_word": "",
+    "th_word": "เลือกภาษาของคุณ",
     "burmese_word": ""
   },
   "app.name": {
     "eng_word": "Collection Verification",
-    "th_word": "",
+    "th_word": "ระบบตรวจสอบการเก็บรวบรวม",
     "burmese_word": ""
   },
   "app.organisation": {
     "eng_word": "Ocean Plastic Recovery",
-    "th_word": "",
+    "th_word": "การเก็บกู้พลาสติกในมหาสมุทร",
     "burmese_word": ""
   },
   "app.tagline": {
     "eng_word": "Record what you recover. Prove it with a photo.",
-    "th_word": "",
+    "th_word": "บันทึกสิ่งที่คุณเก็บกู้ และยืนยันด้วยภาพถ่าย",
     "burmese_word": ""
   },
   "app.point_1": {
     "eng_word": "Crew log every load with a photo of the scale",
-    "th_word": "",
+    "th_word": "ลูกเรือบันทึกการเก็บทุกครั้งพร้อมภาพถ่ายเครื่องชั่ง",
     "burmese_word": ""
   },
   "app.point_2": {
     "eng_word": "Sponsors check each record before it counts",
-    "th_word": "",
+    "th_word": "ผู้ดูแลตรวจสอบแต่ละรายการก่อนนำไปคำนวณ",
     "burmese_word": ""
   },
   "app.point_3": {
     "eng_word": "Only verified weight reaches the fleet total",
-    "th_word": "",
+    "th_word": "เฉพาะน้ำหนักที่ตรวจสอบแล้วเท่านั้นที่จะรวมในยอดรวมของกองเรือ",
     "burmese_word": ""
   },
   "app.copyright": {
     "eng_word": "© 2026 Ocean Plastic Recovery",
-    "th_word": "",
+    "th_word": "© 2026 Ocean Plastic Recovery",
     "burmese_word": ""
   },
   "common.cancel": {
     "eng_word": "Cancel",
-    "th_word": "",
+    "th_word": "ยกเลิก",
     "burmese_word": ""
   },
   "common.continue": {
     "eng_word": "Continue",
-    "th_word": "",
+    "th_word": "ดำเนินการต่อ",
     "burmese_word": ""
   },
   "common.back": {
     "eng_word": "Back",
-    "th_word": "",
+    "th_word": "ย้อนกลับ",
     "burmese_word": ""
   },
   "common.retry": {
     "eng_word": "Retry",
-    "th_word": "",
+    "th_word": "ลองอีกครั้ง",
     "burmese_word": ""
   },
   "common.error": {
     "eng_word": "Error",
-    "th_word": "",
+    "th_word": "ข้อผิดพลาด",
     "burmese_word": ""
   },
   "common.loading": {
     "eng_word": "Loading…",
-    "th_word": "",
+    "th_word": "กำลังโหลด…",
     "burmese_word": ""
   },
   "common.kg": {
     "eng_word": "kg",
-    "th_word": "",
+    "th_word": "กก.",
     "burmese_word": ""
   },
   "common.record_one": {
     "eng_word": "record",
-    "th_word": "",
+    "th_word": "รายการ",
     "burmese_word": ""
   },
   "common.record_many": {
     "eng_word": "records",
-    "th_word": "",
+    "th_word": "รายการ",
     "burmese_word": ""
   },
   "common.records_count": {
     "eng_word": "{count} records",
-    "th_word": "",
+    "th_word": "{count} รายการ",
     "burmese_word": ""
   },
   "common.record_count_one": {
     "eng_word": "1 record",
-    "th_word": "",
+    "th_word": "1 รายการ",
     "burmese_word": ""
   },
   "common.unable_to_connect": {
     "eng_word": "Unable to connect to server.",
-    "th_word": "",
+    "th_word": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
     "burmese_word": ""
   },
   "common.optional": {
     "eng_word": "(optional)",
-    "th_word": "",
+    "th_word": "(ไม่บังคับ)",
     "burmese_word": ""
   },
   "nav.home": {
     "eng_word": "Home",
-    "th_word": "",
+    "th_word": "หน้าหลัก",
     "burmese_word": ""
   },
   "nav.history": {
     "eng_word": "History",
-    "th_word": "",
+    "th_word": "ประวัติ",
     "burmese_word": ""
   },
   "nav.profile": {
     "eng_word": "Profile",
-    "th_word": "",
+    "th_word": "โปรไฟล์",
     "burmese_word": ""
   },
   "nav.log_out": {
     "eng_word": "Log out",
-    "th_word": "",
+    "th_word": "ออกจากระบบ",
     "burmese_word": ""
   },
   "role.crew_member": {
     "eng_word": "Crew member",
-    "th_word": "",
+    "th_word": "ลูกเรือ",
     "burmese_word": ""
   },
   "role.sponsor_management": {
     "eng_word": "Sponsor / Management",
-    "th_word": "",
+    "th_word": "ผู้สนับสนุน / ฝ่ายจัดการ",
     "burmese_word": ""
   },
   "role.administrator": {
     "eng_word": "Administrator",
-    "th_word": "",
+    "th_word": "ผู้ดูแลระบบ",
     "burmese_word": ""
   },
   "status.pending": {
     "eng_word": "Pending",
-    "th_word": "",
+    "th_word": "รอตรวจสอบ",
     "burmese_word": ""
   },
   "status.verified": {
     "eng_word": "Verified",
-    "th_word": "",
+    "th_word": "ตรวจสอบแล้ว",
     "burmese_word": ""
   },
   "status.rejected": {
     "eng_word": "Rejected",
-    "th_word": "",
+    "th_word": "ปฏิเสธแล้ว",
     "burmese_word": ""
   },
   "status.saved_on_phone": {
     "eng_word": "Saved on this phone",
-    "th_word": "",
+    "th_word": "บันทึกไว้ในโทรศัพท์เครื่องนี้",
     "burmese_word": ""
   },
   "status.unknown": {
     "eng_word": "Unknown",
-    "th_word": "",
+    "th_word": "ไม่ทราบ",
     "burmese_word": ""
   },
   "material.pet_bottles": {
     "eng_word": "PET bottles",
-    "th_word": "",
+    "th_word": "ขวด PET",
     "burmese_word": ""
   },
   "material.hdpe_rigid": {
     "eng_word": "HDPE rigid",
-    "th_word": "",
+    "th_word": "พลาสติกแข็ง HDPE",
     "burmese_word": ""
   },
   "material.fishing_net_rope": {
     "eng_word": "Fishing net / rope",
-    "th_word": "",
+    "th_word": "อวนประมง / เชือก",
     "burmese_word": ""
   },
   "material.ldpe_film": {
     "eng_word": "LDPE film",
-    "th_word": "",
+    "th_word": "ฟิล์ม LDPE",
     "burmese_word": ""
   },
   "material.mixed": {
     "eng_word": "Mixed",
-    "th_word": "",
+    "th_word": "พลาสติกผสม",
     "burmese_word": ""
   },
   "signin.title": {
     "eng_word": "Sign in",
-    "th_word": "",
+    "th_word": "เข้าสู่ระบบ",
     "burmese_word": ""
   },
   "signin.subtitle": {
     "eng_word": "Record what you recover and follow its verification.",
-    "th_word": "",
+    "th_word": "บันทึกสิ่งที่คุณเก็บกู้และติดตามการตรวจสอบ",
     "burmese_word": ""
   },
   "signin.username": {
     "eng_word": "Username",
-    "th_word": "",
+    "th_word": "ชื่อผู้ใช้",
     "burmese_word": ""
   },
   "signin.password": {
     "eng_word": "Password",
-    "th_word": "",
+    "th_word": "รหัสผ่าน",
     "burmese_word": ""
   },
   "signin.submit": {
     "eng_word": "Sign in",
-    "th_word": "",
+    "th_word": "เข้าสู่ระบบ",
     "burmese_word": ""
   },
   "signin.submitting": {
     "eng_word": "Signing in…",
-    "th_word": "",
+    "th_word": "กำลังเข้าสู่ระบบ…",
     "burmese_word": ""
   },
   "signin.no_account": {
     "eng_word": "New here?",
-    "th_word": "",
+    "th_word": "เพิ่งมาใช้งาน?",
     "burmese_word": ""
   },
   "signin.create_account": {
     "eng_word": "Create an account",
-    "th_word": "",
+    "th_word": "สร้างบัญชี",
     "burmese_word": ""
   },
   "signin.approval_note": {
     "eng_word": "New accounts can sign in once an administrator has approved them.",
-    "th_word": "",
+    "th_word": "บัญชีใหม่จะเข้าสู่ระบบได้หลังจากผู้ดูแลระบบอนุมัติแล้ว",
     "burmese_word": ""
   },
   "signin.error_username": {
     "eng_word": "Enter your username.",
-    "th_word": "",
+    "th_word": "กรุณากรอกชื่อผู้ใช้",
     "burmese_word": ""
   },
   "signin.error_password": {
     "eng_word": "Enter your password.",
-    "th_word": "",
+    "th_word": "กรุณากรอกรหัสผ่าน",
     "burmese_word": ""
   },
   "signin.error_generic": {
     "eng_word": "Could not sign in. Please try again.",
-    "th_word": "",
+    "th_word": "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองอีกครั้ง",
     "burmese_word": ""
   },
   "signin.demo_title": {
     "eng_word": "Prototype: demo accounts",
-    "th_word": "",
+    "th_word": "ต้นแบบ: บัญชีสำหรับทดลอง",
     "burmese_word": ""
   },
   "signin.demo_password": {
     "eng_word": "Password for every demo account:",
-    "th_word": "",
+    "th_word": "รหัสผ่านสำหรับบัญชีทดลองทุกบัญชี:",
     "burmese_word": ""
   },
   "register.title": {
     "eng_word": "Create an account",
-    "th_word": "",
+    "th_word": "สร้างบัญชี",
     "burmese_word": ""
   },
   "register.subtitle": {
     "eng_word": "Tell us who you are and what you do.",
-    "th_word": "",
+    "th_word": "กรอกข้อมูลเกี่ยวกับตัวคุณและหน้าที่ของคุณ",
     "burmese_word": ""
   },
   "register.approval_note": {
     "eng_word": "An administrator checks every new account. You can sign in once it has been approved.",
-    "th_word": "",
+    "th_word": "ผู้ดูแลระบบจะตรวจสอบบัญชีใหม่ทุกบัญชี คุณสามารถเข้าสู่ระบบได้หลังจากได้รับการอนุมัติ",
     "burmese_word": ""
   },
   "register.full_name": {
     "eng_word": "Full name",
-    "th_word": "",
+    "th_word": "ชื่อ-นามสกุล",
     "burmese_word": ""
   },
   "register.email": {
     "eng_word": "Email",
-    "th_word": "",
+    "th_word": "อีเมล",
     "burmese_word": ""
   },
   "register.username": {
     "eng_word": "Username",
-    "th_word": "",
+    "th_word": "ชื่อผู้ใช้",
     "burmese_word": ""
   },
   "register.password": {
     "eng_word": "Password",
-    "th_word": "",
+    "th_word": "รหัสผ่าน",
     "burmese_word": ""
   },
   "register.i_am_a": {
     "eng_word": "I am a",
-    "th_word": "",
+    "th_word": "ฉันเป็น",
     "burmese_word": ""
   },
   "register.submit": {
     "eng_word": "Create account",
-    "th_word": "",
+    "th_word": "สร้างบัญชี",
     "burmese_word": ""
   },
   "register.submitting": {
     "eng_word": "Sending request…",
-    "th_word": "",
+    "th_word": "กำลังส่งคำขอ…",
     "burmese_word": ""
   },
   "register.have_account": {
     "eng_word": "Already have one?",
-    "th_word": "",
+    "th_word": "มีบัญชีอยู่แล้ว?",
     "burmese_word": ""
   },
   "register.sign_in": {
     "eng_word": "Sign in",
-    "th_word": "",
+    "th_word": "เข้าสู่ระบบ",
     "burmese_word": ""
   },
   "register.error_name": {
     "eng_word": "Enter your full name.",
-    "th_word": "",
+    "th_word": "กรุณากรอกชื่อ-นามสกุล",
     "burmese_word": ""
   },
   "register.error_email": {
     "eng_word": "Enter a valid email address.",
-    "th_word": "",
+    "th_word": "กรุณากรอกอีเมลที่ถูกต้อง",
     "burmese_word": ""
   },
   "register.error_username": {
     "eng_word": "Use 3-30 letters, numbers, dots, dashes or underscores.",
-    "th_word": "",
+    "th_word": "ใช้ตัวอักษร ตัวเลข จุด ขีดกลาง หรือขีดล่าง จำนวน 3-30 ตัว",
     "burmese_word": ""
   },
   "register.error_password": {
     "eng_word": "Passwords need at least {count} characters.",
-    "th_word": "",
+    "th_word": "รหัสผ่านต้องมีอย่างน้อย {count} ตัวอักษร",
     "burmese_word": ""
   },
   "register.error_role": {
     "eng_word": "Choose what you do.",
-    "th_word": "",
+    "th_word": "เลือกหน้าที่ของคุณ",
     "burmese_word": ""
   },
   "register.error_generic": {
     "eng_word": "Could not send your request. Please try again.",
-    "th_word": "",
+    "th_word": "ไม่สามารถส่งคำขอได้ กรุณาลองอีกครั้ง",
     "burmese_word": ""
   },
   "request_sent.title": {
     "eng_word": "Request sent",
-    "th_word": "",
+    "th_word": "ส่งคำขอแล้ว",
     "burmese_word": ""
   },
   "request_sent.thanks": {
     "eng_word": "Thanks, {name}.",
-    "th_word": "",
+    "th_word": "ขอบคุณ {name}",
     "burmese_word": ""
   },
   "request_sent.body": {
     "eng_word": "An administrator will check your request. You can sign in once it has been approved.",
-    "th_word": "",
+    "th_word": "ผู้ดูแลระบบจะตรวจสอบคำขอของคุณ คุณสามารถเข้าสู่ระบบได้หลังจากได้รับการอนุมัติ",
     "burmese_word": ""
   },
   "request_sent.body_with_role": {
     "eng_word": "An administrator will check your request to join as {role}. You can sign in once it has been approved.",
-    "th_word": "",
+    "th_word": "ผู้ดูแลระบบจะตรวจสอบคำขอเข้าร่วมในบทบาท {role} คุณสามารถเข้าสู่ระบบได้หลังจากได้รับการอนุมัติ",
     "burmese_word": ""
   },
   "request_sent.back_to_signin": {
     "eng_word": "Back to sign in",
-    "th_word": "",
+    "th_word": "กลับไปหน้าเข้าสู่ระบบ",
     "burmese_word": ""
   },
   "server_error.incorrect_login": {
     "eng_word": "Incorrect username or password.",
-    "th_word": "",
+    "th_word": "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
     "burmese_word": ""
   },
   "server_error.pending": {
     "eng_word": "Your account is waiting for an administrator to approve it.",
-    "th_word": "",
+    "th_word": "บัญชีของคุณกำลังรอผู้ดูแลระบบอนุมัติ",
     "burmese_word": ""
   },
   "server_error.rejected": {
     "eng_word": "Your account request was not approved. Please contact the administrator.",
-    "th_word": "",
+    "th_word": "คำขอบัญชีของคุณไม่ได้รับการอนุมัติ กรุณาติดต่อผู้ดูแลระบบ",
     "burmese_word": ""
   },
   "server_error.suspended": {
     "eng_word": "Your account is suspended. Please contact the administrator.",
-    "th_word": "",
+    "th_word": "บัญชีของคุณถูกระงับ กรุณาติดต่อผู้ดูแลระบบ",
     "burmese_word": ""
   },
   "server_error.sign_in_again": {
     "eng_word": "Please sign in again.",
-    "th_word": "",
+    "th_word": "กรุณาเข้าสู่ระบบอีกครั้ง",
     "burmese_word": ""
   },
   "server_error.username_taken": {
     "eng_word": "That username is already taken. Please choose another one.",
-    "th_word": "",
+    "th_word": "ชื่อผู้ใช้นี้ถูกใช้แล้ว กรุณาเลือกชื่ออื่น",
     "burmese_word": ""
   },
   "server_error.email_taken": {
     "eng_word": "An account with this email address already exists.",
-    "th_word": "",
+    "th_word": "มีบัญชีที่ใช้อีเมลนี้อยู่แล้ว",
     "burmese_word": ""
   },
   "server_error.no_permission": {
     "eng_word": "You do not have permission to do this.",
-    "th_word": "",
+    "th_word": "คุณไม่มีสิทธิ์ดำเนินการนี้",
     "burmese_word": ""
   },
   "home.welcome": {
     "eng_word": "Welcome back, {name}",
-    "th_word": "",
+    "th_word": "ยินดีต้อนรับกลับมา {name}",
     "burmese_word": ""
   },
   "home.subtitle": {
     "eng_word": "Personal Dashboard · Ocean Plastic Recovery",
-    "th_word": "",
+    "th_word": "แดชบอร์ดส่วนตัว · การเก็บกู้พลาสติกในมหาสมุทร",
     "burmese_word": ""
   },
   "home.add_collection": {
     "eng_word": "Add a collection",
-    "th_word": "",
+    "th_word": "เพิ่มรายการเก็บรวบรวม",
     "burmese_word": ""
   },
   "home.saved_on_phone_count": {
     "eng_word": "{count} records saved on this phone",
-    "th_word": "",
+    "th_word": "บันทึกไว้ในโทรศัพท์เครื่องนี้ {count} รายการ",
     "burmese_word": ""
   },
   "home.saved_offline": {
     "eng_word": "Saved offline. Ready to sync when connected.",
-    "th_word": "",
+    "th_word": "บันทึกแบบออฟไลน์แล้ว พร้อมซิงก์เมื่อเชื่อมต่ออินเทอร์เน็ต",
     "burmese_word": ""
   },
   "home.review_and_send": {
     "eng_word": "Review & Send",
-    "th_word": "",
+    "th_word": "ตรวจสอบและส่ง",
     "burmese_word": ""
   },
   "home.today": {
     "eng_word": "Today",
-    "th_word": "",
+    "th_word": "วันนี้",
     "burmese_word": ""
   },
   "home.this_month": {
     "eng_word": "This month",
-    "th_word": "",
+    "th_word": "เดือนนี้",
     "burmese_word": ""
   },
   "home.kg_verified": {
     "eng_word": "kg verified",
-    "th_word": "",
+    "th_word": "กก. ที่ตรวจสอบแล้ว",
     "burmese_word": ""
   },
   "home.kg_pending_review": {
     "eng_word": "+{kg} kg pending review",
-    "th_word": "",
+    "th_word": "+{kg} กก. รอตรวจสอบ",
     "burmese_word": ""
   },
   "home.pending_review": {
     "eng_word": "Pending review",
-    "th_word": "",
+    "th_word": "รอตรวจสอบ",
     "burmese_word": ""
   },
   "home.awaiting_verification": {
     "eng_word": "Awaiting supervisor verification",
-    "th_word": "",
+    "th_word": "กำลังรอผู้ดูแลตรวจสอบ",
     "burmese_word": ""
   },
   "home.on_this_phone": {
     "eng_word": "On this phone",
-    "th_word": "",
+    "th_word": "ในโทรศัพท์เครื่องนี้",
     "burmese_word": ""
   },
   "home.waiting_to_upload": {
     "eng_word": "Waiting to upload",
-    "th_word": "",
+    "th_word": "รออัปโหลด",
     "burmese_word": ""
   },
   "home.all_synced": {
     "eng_word": "All synced",
-    "th_word": "",
+    "th_word": "ซิงก์ทั้งหมดแล้ว",
     "burmese_word": ""
   },
   "home.ready_title": {
     "eng_word": "Ready to record another collection?",
-    "th_word": "",
+    "th_word": "พร้อมบันทึกรายการเก็บรวบรวมใหม่หรือยัง?",
     "burmese_word": ""
   },
   "home.ready_body": {
     "eng_word": "Log scale weight, photo of scale display, and GPS coordinates.",
-    "th_word": "",
+    "th_word": "บันทึกน้ำหนักจากเครื่องชั่ง ภาพหน้าจอเครื่องชั่ง และพิกัด GPS",
     "burmese_word": ""
   },
   "home.start_collection": {
     "eng_word": "Start collection",
-    "th_word": "",
+    "th_word": "เริ่มบันทึกการเก็บรวบรวม",
     "burmese_word": ""
   },
   "home.view_history": {
     "eng_word": "View history",
-    "th_word": "",
+    "th_word": "ดูประวัติ",
     "burmese_word": ""
   },
   "home.recent_title": {
     "eng_word": "Recent collections",
-    "th_word": "",
+    "th_word": "รายการเก็บรวบรวมล่าสุด",
     "burmese_word": ""
   },
   "home.recent_subtitle": {
     "eng_word": "Your latest recorded loads",
-    "th_word": "",
+    "th_word": "รายการล่าสุดที่คุณบันทึก",
     "burmese_word": ""
   },
   "home.view_all_history": {
     "eng_word": "View all history →",
-    "th_word": "",
+    "th_word": "ดูประวัติทั้งหมด →",
     "burmese_word": ""
   },
   "home.verified_note": {
     "eng_word": "Only verified weight is counted in the verified totals. Pending records are shown separately until a supervisor approves them.",
-    "th_word": "",
+    "th_word": "เฉพาะน้ำหนักที่ตรวจสอบแล้วเท่านั้นที่จะนับรวมในยอดที่ตรวจสอบแล้ว รายการที่รอตรวจสอบจะแสดงแยกจนกว่าผู้ดูแลจะอนุมัติ",
     "burmese_word": ""
   },
   "history.title": {
     "eng_word": "My history",
-    "th_word": "",
+    "th_word": "ประวัติของฉัน",
     "burmese_word": ""
   },
   "history.loading": {
     "eng_word": "Loading records...",
-    "th_word": "",
+    "th_word": "กำลังโหลดรายการ...",
     "burmese_word": ""
   },
   "history.filter_label": {
     "eng_word": "Filter collection records",
-    "th_word": "",
+    "th_word": "กรองรายการเก็บรวบรวม",
     "burmese_word": ""
   },
   "history.filter_all": {
     "eng_word": "All",
-    "th_word": "",
+    "th_word": "ทั้งหมด",
     "burmese_word": ""
   },
   "history.empty": {
     "eng_word": "You haven't recorded any collections yet.",
-    "th_word": "",
+    "th_word": "คุณยังไม่ได้บันทึกรายการเก็บรวบรวม",
     "burmese_word": ""
   },
   "history.empty_filtered": {
     "eng_word": "There are no records with {status} status.",
-    "th_word": "",
+    "th_word": "ไม่มีรายการที่มีสถานะ {status}",
     "burmese_word": ""
   },
   "history.today_at": {
     "eng_word": "Today, {time}",
-    "th_word": "",
+    "th_word": "วันนี้ เวลา {time}",
     "burmese_word": ""
   },
   "record_detail.title": {
     "eng_word": "Collection record",
-    "th_word": "",
+    "th_word": "รายการเก็บรวบรวม",
     "burmese_word": ""
   },
   "record_detail.not_found_title": {
     "eng_word": "Record not found",
-    "th_word": "",
+    "th_word": "ไม่พบรายการ",
     "burmese_word": ""
   },
   "record_detail.not_found_body": {
     "eng_word": "No collection record matches {id}.",
-    "th_word": "",
+    "th_word": "ไม่พบรายการเก็บรวบรวมที่ตรงกับ {id}",
     "burmese_word": ""
   },
   "record_detail.back_to_history": {
     "eng_word": "Back to history",
-    "th_word": "",
+    "th_word": "กลับไปหน้าประวัติ",
     "burmese_word": ""
   },
   "record_detail.loading": {
     "eng_word": "Loading collection record...",
-    "th_word": "",
+    "th_word": "กำลังโหลดรายการเก็บรวบรวม...",
     "burmese_word": ""
   },
   "record_detail.load_error": {
     "eng_word": "Unable to fetch record from server.",
-    "th_word": "",
+    "th_word": "ไม่สามารถดึงข้อมูลรายการจากเซิร์ฟเวอร์ได้",
     "burmese_word": ""
   },
   "record_detail.evidence": {
     "eng_word": "Evidence",
-    "th_word": "",
+    "th_word": "หลักฐาน",
     "burmese_word": ""
   },
   "record_detail.evidence_caption": {
     "eng_word": "Photographed when the load was recorded",
-    "th_word": "",
+    "th_word": "ถ่ายภาพขณะบันทึกรายการ",
     "burmese_word": ""
   },
   "record_detail.scale_photo": {
     "eng_word": "Scale photo",
-    "th_word": "",
+    "th_word": "ภาพเครื่องชั่ง",
     "burmese_word": ""
   },
   "record_detail.kg_net": {
     "eng_word": "kg NET",
-    "th_word": "",
+    "th_word": "กก. สุทธิ",
     "burmese_word": ""
   },
   "record_detail.details": {
     "eng_word": "Details",
-    "th_word": "",
+    "th_word": "รายละเอียด",
     "burmese_word": ""
   },
   "record_detail.record_number": {
     "eng_word": "Record number",
-    "th_word": "",
+    "th_word": "หมายเลขรายการ",
     "burmese_word": ""
   },
   "record_detail.boat": {
     "eng_word": "Boat",
-    "th_word": "",
+    "th_word": "เรือ",
     "burmese_word": ""
   },
   "record_detail.weight": {
     "eng_word": "Weight",
-    "th_word": "",
+    "th_word": "น้ำหนัก",
     "burmese_word": ""
   },
   "record_detail.material": {
     "eng_word": "Material",
-    "th_word": "",
+    "th_word": "วัสดุ",
     "burmese_word": ""
   },
   "record_detail.recorded": {
     "eng_word": "Recorded",
-    "th_word": "",
+    "th_word": "บันทึกเมื่อ",
     "burmese_word": ""
   },
   "record_detail.reviewed": {
     "eng_word": "Reviewed",
-    "th_word": "",
+    "th_word": "ตรวจสอบเมื่อ",
     "burmese_word": ""
   },
   "record_detail.status": {
     "eng_word": "Status",
-    "th_word": "",
+    "th_word": "สถานะ",
     "burmese_word": ""
   },
   "record_detail.note": {
     "eng_word": "Note",
-    "th_word": "",
+    "th_word": "หมายเหตุ",
     "burmese_word": ""
   },
   "record_detail.reviewed_by": {
     "eng_word": "Reviewed by {name}",
-    "th_word": "",
+    "th_word": "ตรวจสอบโดย {name}",
     "burmese_word": ""
   },
   "record_detail.rejection_reason": {
     "eng_word": "Reason for rejection",
-    "th_word": "",
+    "th_word": "เหตุผลที่ปฏิเสธ",
     "burmese_word": ""
   },
   "record.which_boat": {
     "eng_word": "Which boat?",
-    "th_word": "",
+    "th_word": "ใช้เรือลำใด?",
     "burmese_word": ""
   },
   "record.which_boat_hint": {
     "eng_word": "Choose the boat used for this collection. You can change it on the next screen.",
-    "th_word": "",
+    "th_word": "เลือกเรือที่ใช้สำหรับการเก็บรวบรวมครั้งนี้ คุณสามารถเปลี่ยนได้ในหน้าถัดไป",
     "burmese_word": ""
   },
   "record.boat_method": {
     "eng_word": "Boat selection method",
-    "th_word": "",
+    "th_word": "วิธีเลือกเรือ",
     "burmese_word": ""
   },
   "record.method_choose": {
     "eng_word": "Choose",
-    "th_word": "",
+    "th_word": "เลือก",
     "burmese_word": ""
   },
   "record.method_type": {
     "eng_word": "Type name",
-    "th_word": "",
+    "th_word": "พิมพ์ชื่อ",
     "burmese_word": ""
   },
   "record.search_boat": {
     "eng_word": "Search by code or boat name",
-    "th_word": "",
+    "th_word": "ค้นหาด้วยรหัสหรือชื่อเรือ",
     "burmese_word": ""
   },
   "record.search_boat_hint": {
     "eng_word": "Search for one of the active registered boats below.",
-    "th_word": "",
+    "th_word": "ค้นหาเรือที่ลงทะเบียนและเปิดใช้งานจากรายการด้านล่าง",
     "burmese_word": ""
   },
   "record.type_boat": {
     "eng_word": "Type the boat name",
-    "th_word": "",
+    "th_word": "พิมพ์ชื่อเรือ",
     "burmese_word": ""
   },
   "record.type_boat_example": {
     "eng_word": "For example, HC-14 or Harbor Cleaner",
-    "th_word": "",
+    "th_word": "ตัวอย่างเช่น HC-14 หรือ Harbor Cleaner",
     "burmese_word": ""
   },
   "record.enter_boat": {
     "eng_word": "Enter a boat name",
-    "th_word": "",
+    "th_word": "กรอกชื่อเรือ",
     "burmese_word": ""
   },
   "record.no_boat_match": {
     "eng_word": "No boat matches that search.",
-    "th_word": "",
+    "th_word": "ไม่พบเรือที่ตรงกับการค้นหา",
     "burmese_word": ""
   },
   "record.choose_boat_error": {
     "eng_word": "Choose an active boat to continue.",
-    "th_word": "",
+    "th_word": "เลือกเรือที่เปิดใช้งานเพื่อดำเนินการต่อ",
     "burmese_word": ""
   },
   "record.selected": {
     "eng_word": "Selected",
-    "th_word": "",
+    "th_word": "เลือกแล้ว",
     "burmese_word": ""
   },
   "record.new_title": {
     "eng_word": "New collection",
-    "th_word": "",
+    "th_word": "รายการเก็บรวบรวมใหม่",
     "burmese_word": ""
   },
   "record.new_subtitle": {
     "eng_word": "Record the load and attach a clear photo of the scale.",
-    "th_word": "",
+    "th_word": "บันทึกข้อมูลและแนบภาพเครื่องชั่งที่เห็นชัดเจน",
     "burmese_word": ""
   },
   "record.step_boat": {
     "eng_word": "Step 2 of 2 · Boat",
-    "th_word": "",
+    "th_word": "ขั้นตอนที่ 2 จาก 2 · เรือ",
     "burmese_word": ""
   },
   "record.weight_kg": {
     "eng_word": "Weight (kg)",
-    "th_word": "",
+    "th_word": "น้ำหนัก (กก.)",
     "burmese_word": ""
   },
   "record.weight_hint": {
     "eng_word": "Read it from the scale",
-    "th_word": "",
+    "th_word": "อ่านค่าจากเครื่องชั่ง",
     "burmese_word": ""
   },
   "record.material": {
     "eng_word": "Material",
-    "th_word": "",
+    "th_word": "วัสดุ",
     "burmese_word": ""
   },
   "record.note": {
     "eng_word": "Note",
-    "th_word": "",
+    "th_word": "หมายเหตุ",
     "burmese_word": ""
   },
   "record.note_hint": {
     "eng_word": "Add a short note if needed",
-    "th_word": "",
+    "th_word": "เพิ่มหมายเหตุสั้น ๆ หากจำเป็น",
     "burmese_word": ""
   },
   "record.scale_photo": {
     "eng_word": "Photo of the scale",
-    "th_word": "",
+    "th_word": "ภาพถ่ายเครื่องชั่ง",
     "burmese_word": ""
   },
   "record.scale_photo_hint": {
     "eng_word": "Show the scale reading clearly",
-    "th_word": "",
+    "th_word": "ให้เห็นค่าบนเครื่องชั่งอย่างชัดเจน",
     "burmese_word": ""
   },
   "record.scale_photo_rule": {
     "eng_word": "One photo is required. You can retake it before saving.",
-    "th_word": "",
+    "th_word": "ต้องมีภาพถ่าย 1 ภาพ และสามารถถ่ายใหม่ได้ก่อนบันทึก",
     "burmese_word": ""
   },
   "record.take_photo": {
     "eng_word": "Take photo",
-    "th_word": "",
+    "th_word": "ถ่ายภาพ",
     "burmese_word": ""
   },
   "record.retake_photo": {
     "eng_word": "Retake photo",
-    "th_word": "",
+    "th_word": "ถ่ายใหม่",
     "burmese_word": ""
   },
   "record.photo_preview": {
     "eng_word": "Preview of the scale photo",
-    "th_word": "",
+    "th_word": "ตัวอย่างภาพเครื่องชั่ง",
     "burmese_word": ""
   },
   "record.choose_image": {
     "eng_word": "Choose an image file for the scale photo.",
-    "th_word": "",
+    "th_word": "เลือกไฟล์ภาพสำหรับภาพเครื่องชั่ง",
     "burmese_word": ""
   },
   "record.error_boat": {
     "eng_word": "Choose a boat from the list.",
-    "th_word": "",
+    "th_word": "เลือกเรือจากรายการ",
     "burmese_word": ""
   },
   "record.error_weight": {
     "eng_word": "Enter a weight greater than 0 kg.",
-    "th_word": "",
+    "th_word": "กรอกน้ำหนักที่มากกว่า 0 กก.",
     "burmese_word": ""
   },
   "record.error_material": {
     "eng_word": "Choose one material type.",
-    "th_word": "",
+    "th_word": "เลือกประเภทวัสดุ 1 ประเภท",
     "burmese_word": ""
   },
   "record.error_photo": {
     "eng_word": "Take a photo of the scale before saving.",
-    "th_word": "",
+    "th_word": "ถ่ายภาพเครื่องชั่งก่อนบันทึก",
     "burmese_word": ""
   },
   "record.save": {
     "eng_word": "Save collection",
-    "th_word": "",
+    "th_word": "บันทึกรายการเก็บรวบรวม",
     "burmese_word": ""
   },
   "record.saving": {
     "eng_word": "Saving…",
-    "th_word": "",
+    "th_word": "กำลังบันทึก…",
     "burmese_word": ""
   },
   "record.saved_title": {
     "eng_word": "Collection saved",
-    "th_word": "",
+    "th_word": "บันทึกรายการแล้ว",
     "burmese_word": ""
   },
   "record.saved_subtitle": {
     "eng_word": "Review the collection details.",
-    "th_word": "",
+    "th_word": "ตรวจสอบรายละเอียดรายการเก็บรวบรวม",
     "burmese_word": ""
   },
   "record.saved_short": {
     "eng_word": "Saved",
-    "th_word": "",
+    "th_word": "บันทึกแล้ว",
     "burmese_word": ""
   },
   "record.back_to_home": {
     "eng_word": "Back to home",
-    "th_word": "",
+    "th_word": "กลับหน้าหลัก",
     "burmese_word": ""
   },
   "record.add_another": {
     "eng_word": "Add another",
-    "th_word": "",
+    "th_word": "เพิ่มรายการใหม่",
     "burmese_word": ""
   },
   "record.send_title": {
     "eng_word": "Send saved records",
-    "th_word": "",
+    "th_word": "ส่งรายการที่บันทึกไว้",
     "burmese_word": ""
   },
   "record.back_to_recording": {
     "eng_word": "Back to recording",
-    "th_word": "",
+    "th_word": "กลับไปหน้าบันทึก",
     "burmese_word": ""
   },
   "record.gps_getting": {
     "eng_word": "Getting your GPS position…",
-    "th_word": "",
+    "th_word": "กำลังค้นหาตำแหน่ง GPS ของคุณ…",
     "burmese_word": ""
   },
   "record.gps_error": {
     "eng_word": "Could not get your GPS position. Turn on location and try again.",
-    "th_word": "",
+    "th_word": "ไม่สามารถรับตำแหน่ง GPS ได้ กรุณาเปิดการระบุตำแหน่งแล้วลองอีกครั้ง",
     "burmese_word": ""
   },
   "record.gps_accuracy": {
     "eng_word": "GPS accuracy: {meters} m",
-    "th_word": "",
+    "th_word": "ความแม่นยำ GPS: {meters} ม.",
     "burmese_word": ""
   },
   "chg002_rewards.earnings_this_month": {
     "eng_word": "Earnings this month",
-    "th_word": "",
+    "th_word": "รายได้เดือนนี้",
     "burmese_word": ""
   },
   "chg002_rewards.earnings_to_date": {
     "eng_word": "Earnings to date",
-    "th_word": "",
+    "th_word": "รายได้สะสม",
     "burmese_word": ""
   },
   "chg002_rewards.pending_amount": {
     "eng_word": "Pending verification",
-    "th_word": "",
+    "th_word": "รอการตรวจสอบ",
     "burmese_word": ""
   },
   "chg002_rewards.amount_thb": {
     "eng_word": "{amount} THB",
-    "th_word": "",
+    "th_word": "{amount} บาท",
     "burmese_word": ""
   },
   "chg002_rewards.reward_for_record": {
     "eng_word": "Reward for this record",
-    "th_word": "",
+    "th_word": "ค่าตอบแทนสำหรับรายการนี้",
     "burmese_word": ""
   },
   "chg002_rewards.no_reward_rejected": {
     "eng_word": "Rejected records earn nothing.",
-    "th_word": "",
+    "th_word": "รายการที่ถูกปฏิเสธจะไม่ได้รับค่าตอบแทน",
     "burmese_word": ""
   },
   "chg002_rewards.reward_reversed": {
     "eng_word": "Reward reversed",
-    "th_word": "",
+    "th_word": "ยกเลิกค่าตอบแทน",
     "burmese_word": ""
   },
   "chg003_auto_verify.auto_verified": {
     "eng_word": "Auto-verified",
-    "th_word": "",
+    "th_word": "ตรวจสอบอัตโนมัติแล้ว",
     "burmese_word": ""
   },
   "chg003_auto_verify.rule_passed": {
     "eng_word": "Passed rule: {rule}",
-    "th_word": "",
+    "th_word": "ผ่านกฎ: {rule}",
     "burmese_word": ""
   },
   "chg003_auto_verify.spot_check": {
     "eng_word": "Selected for spot-check",
-    "th_word": "",
+    "th_word": "ถูกเลือกเพื่อตรวจสอบแบบสุ่ม",
     "burmese_word": ""
   },
   "chg004_evidence.photo_plastic": {
     "eng_word": "Photo of the plastic before weighing",
-    "th_word": "",
+    "th_word": "ภาพพลาสติกก่อนชั่งน้ำหนัก",
     "burmese_word": ""
   },
   "chg004_evidence.photo_plastic_hint": {
     "eng_word": "Show the whole load before it goes on the scale",
-    "th_word": "",
+    "th_word": "แสดงพลาสติกทั้งหมดก่อนนำขึ้นเครื่องชั่ง",
     "burmese_word": ""
   },
   "chg004_evidence.photo_scale": {
     "eng_word": "Photo of the scale display",
-    "th_word": "",
+    "th_word": "ภาพหน้าจอเครื่องชั่ง",
     "burmese_word": ""
   },
   "chg004_evidence.two_photos_required": {
     "eng_word": "Two photos are required: the plastic and the scale display.",
-    "th_word": "",
+    "th_word": "ต้องมีภาพถ่าย 2 ภาพ: พลาสติกและหน้าจอเครื่องชั่ง",
     "burmese_word": ""
   },
   "chg004_evidence.landing_site": {
     "eng_word": "Landing site",
-    "th_word": "",
+    "th_word": "จุดนำของขึ้นฝั่ง",
     "burmese_word": ""
   },
   "chg004_evidence.landing_site_ok": {
     "eng_word": "You are at {site}.",
-    "th_word": "",
+    "th_word": "คุณอยู่ที่ {site}",
     "burmese_word": ""
   },
   "chg004_evidence.not_at_landing_site": {
     "eng_word": "You must be within 100 m of a registered landing site (pier or port) to record a collection.",
-    "th_word": "",
+    "th_word": "คุณต้องอยู่ภายในระยะ 100 ม. จากจุดนำของขึ้นฝั่งที่ลงทะเบียนไว้ (ท่าเรือหรือท่าเทียบเรือ) จึงจะบันทึกรายการเก็บรวบรวมได้",
     "burmese_word": ""
   },
   "chg004_evidence.duplicate_photo": {
     "eng_word": "This photo was already used in an earlier record. The record will be flagged for review.",
-    "th_word": "",
+    "th_word": "ภาพนี้เคยใช้ในรายการก่อนหน้าแล้ว รายการนี้จะถูกทำเครื่องหมายเพื่อตรวจสอบ",
     "burmese_word": ""
   },
   "chg004_evidence.flagged": {
     "eng_word": "Flagged for review",
-    "th_word": "",
+    "th_word": "ทำเครื่องหมายเพื่อตรวจสอบ",
     "burmese_word": ""
   }
 }
