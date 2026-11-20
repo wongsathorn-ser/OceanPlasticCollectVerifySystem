@@ -11,6 +11,37 @@ export function formatMaterial(material) {
   return MATERIAL_LABELS[material] || material || 'Mixed'
 }
 
+export function readOfflineRecords() {
+  try {
+    const raw = localStorage.getItem('ocean_offline_records')
+    const records = raw ? JSON.parse(raw) : []
+    return Array.isArray(records) ? records : []
+  } catch {
+    return []
+  }
+}
+
+export function formatJoinedDate(value) {
+  if (!value) return '—'
+  if (typeof value === 'string' && value.toLowerCase().startsWith('joined ')) return value
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : `joined ${date.toLocaleString('en', { month: 'long', year: 'numeric' })}`
+}
+
+export function formatLastDate(value) {
+  if (!value) return '—'
+  return typeof value === 'string' ? value : String(value)
+}
+
+export function formatWeight(weightKg) {
+  const weight = Number(weightKg)
+  if (!Number.isFinite(weight)) return '—'
+  if (weight >= 1000) return `${(weight / 1000).toFixed(1)} t`
+  return `${weight} kg`
+}
+
 export const DEFAULT_RECORDS = [
   {
     id: 'rec-1043',
