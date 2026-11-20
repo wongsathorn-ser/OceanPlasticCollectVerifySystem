@@ -1,213 +1,131 @@
-// F2 · Enter collection & evidence (step 2 of 2) | FR-2.2 visual preview
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-
 import { F2Button, F2Card, F2Notice, F2Page, inputClassName } from '../components/F2Page.jsx'
-import { MATERIAL_OPTIONS, PREVIEW_BOATS } from '../mockData.js'
+import { useBoats, useF2User } from '../hooks.js'
+import { useF2Language } from '../i18n.js'
+import { MATERIALS } from '../constants.js'
+import { captureLocation } from '../offline/location.js'
+import { preparePhoto } from '../offline/photo.js'
+import { saveDraft } from '../offline/localDb.js'
+import { syncQueue } from '../offline/syncQueue.js'
 
 export default function NewCollectionPage() {
   const navigate = useNavigate()
-  const location = useLocation()
-  const initialBoat = location.state?.boat || null
+  const initialBoat = useLocation().state?.boat
+  const { user } = useF2User()
+  const { t } = useF2Language()
+  const { boats } = useBoats()
   const [boatId, setBoatId] = useState(initialBoat?.id || '')
   const [weight, setWeight] = useState('')
   const [material, setMaterial] = useState('')
   const [note, setNote] = useState('')
   const [photo, setPhoto] = useState(null)
-  const [photoPreview, setPhotoPreview] = useState('')
-  const [photoError, setPhotoError] = useState('')
+  const photoImage = useRef(null)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [gps, setGps] = useState(null)
+  const [gpsBusy, setGpsBusy] = useState(false)
+  const [gpsError, setGpsError] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const requestId = useRef(0)
+  const savingRef = useRef(false)
+  const availableBoats = boats.length ? boats : initialBoat ? [initialBoat] : []
 
+  async function getGps() {
+    const current = ++requestId.current
+    setGps(null); setGpsError(''); setGpsBusy(true)
+    try {
+      const fix = await captureLocation()
+      if (current === requestId.current) setGps(fix)
+    } catch (failure) { if (current === requestId.current) setGpsError(failure.message) }
+    finally { if (current === requestId.current) setGpsBusy(false) }
+  }
   useEffect(() => {
     if (!initialBoat) navigate('/record', { replace: true })
+    // A fresh geolocation request synchronizes the browser location on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    getGps()
+    return () => { requestId.current += 1 }
   }, [initialBoat, navigate])
-
   useEffect(() => {
-    if (!photo) {
-      setPhotoPreview('')
-      return undefined
-    }
+    if (!photo || !photoImage.current) return undefined
     const url = URL.createObjectURL(photo)
-    setPhotoPreview(url)
+    photoImage.current.src = url
     return () => URL.revokeObjectURL(url)
   }, [photo])
 
+  async function choosePhoto(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setError(''); setPhoto(null); setPhotoBusy(true)
+    // Bind the GPS fix to this evidence capture, not to a later upload.
+    getGps()
+    try { setPhoto(await preparePhoto(file)) }
+    catch (failure) { setError(failure.message) }
+    finally { setPhotoBusy(false) }
+  }
+
   async function onSubmit(event) {
     event.preventDefault()
+    if (savingRef.current) return
     setError('')
-    const numericWeight = Number(weight)
-    const selectedBoat = PREVIEW_BOATS.find((boat) => String(boat.id) === String(boatId))
-    if (!selectedBoat) {
-      setError('Choose a boat from the list.')
-      return
-    }
-    if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
-      setError('Enter a weight greater than 0 kg.')
-      return
-    }
-    if (!material) {
-      setError('Choose one material type.')
-      return
-    }
-    if (!photo) {
-      setError('Take a photo of the scale before saving.')
-      return
-    }
-
+    const boat = availableBoats.find((row) => String(row.id) === String(boatId))
+    if (!boat) return setError(t('record.error_boat'))
+    if (!Number.isFinite(Number(weight)) || Number(weight) <= 0) return setError(t('record.error_weight'))
+    if (!material) return setError(t('record.error_material'))
+    if (!photo) return setError(t('record.error_photo'))
+    if (!gps || gpsBusy) return setError(t('f2.gps_wait'))
+    if (!user) return setError(t('f2.crew_required'))
+    savingRef.current = true
     setSaving(true)
-    const record = {
-      record_number: `REC-${String(Date.now()).slice(-6)}`,
-      boat_id: selectedBoat.id,
-      boat_code: selectedBoat.code,
-      boat_name: selectedBoat.name,
-      weight_kg: numericWeight,
-      material,
-      note: note.trim(),
-      status: 'PENDING',
-      recorded_at: new Date().toISOString(),
+    const draft = {
+      client_id: crypto.randomUUID(), owner_id: user.id,
+      boat_id: boat.id, boat_code: boat.code, boat_name: boat.name,
+      weight_kg: Number(weight), material, note: note.trim(), photo,
+      ...gps, recorded_at: new Date().toISOString(), local_status: 'SAVED_ON_PHONE', last_error: '',
     }
-    navigate('/record/saved', { state: { record, previewOnly: true } })
+    try {
+      await saveDraft(draft)
+      // A failing network call cannot undo the completed IndexedDB transaction.
+      syncQueue().catch(() => {})
+      navigate(`/record/saved?client_id=${draft.client_id}`)
+    } catch (failure) {
+      setError(`${t('f2.storage_error')} ${failure.message}`)
+      savingRef.current = false; setSaving(false)
+    }
   }
 
   if (!initialBoat) return null
-
   return (
-    <F2Page
-      title="New collection"
-      description="Record the load and attach a clear photo of the scale."
-      actions={<Link to="/record" className="inline-flex min-h-12 items-center rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">Cancel</Link>}
-      width="max-w-6xl"
-    >
+    <F2Page title={t('record.new_title')} description={t('record.new_subtitle')} eyebrow={t('f2.title')} width="max-w-6xl" actions={<Link to="/record" className="text-sm font-semibold text-slate-600">{t('common.cancel')}</Link>}>
       <form onSubmit={onSubmit}>
         <F2Card>
-          <div className="mb-5 grid gap-3 border-b border-slate-200 pb-4 sm:grid-cols-[1fr_auto] sm:items-end">
-            <div>
-              <label htmlFor="collection-boat" className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#0c6e80]">
-                Step 2 of 2 · Boat
-              </label>
-              <select
-                id="collection-boat"
-                className="min-h-12 w-full max-w-sm rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800 focus:border-[#0c6e80] focus:outline-none focus:ring-2 focus:ring-[#0c6e80]/20"
-                value={boatId}
-                onChange={(event) => setBoatId(event.target.value)}
-              >
-                {PREVIEW_BOATS.map((boat) => (
-                  <option key={boat.id} value={boat.id}>{boat.code} · {boat.name}</option>
-                ))}
-              </select>
-            </div>
-            <span className="justify-self-start rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 sm:justify-self-end">UI preview</span>
-          </div>
-
-          <F2Notice tone="calm" className="mb-5">GPS, offline saving, and server upload are deferred in this first UI pass.</F2Notice>
           {error && <F2Notice tone="error" className="mb-5" role="alert">{error}</F2Notice>}
-
-          <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
+          <div className="grid gap-7 lg:grid-cols-2">
             <div className="space-y-5">
-              <div>
-                <label htmlFor="weight-kg" className="mb-2 block text-sm font-semibold text-slate-800">
-                  Weight (kg) <span className="text-red-700">*</span>
-                </label>
-                <input
-                  id="weight-kg"
-                  className={`${inputClassName} text-lg font-semibold`}
-                  type="number"
-                  min="0.001"
-                  step="any"
-                  inputMode="decimal"
-                  placeholder="Read it from the scale"
-                  value={weight}
-                  onChange={(event) => setWeight(event.target.value)}
-                  required
-                />
-              </div>
-
-              <fieldset>
-                <legend className="mb-2 text-sm font-semibold text-slate-800">
-                  Material <span className="text-red-700">*</span>
-                </legend>
-                <div className="flex flex-wrap gap-2">
-                  {MATERIAL_OPTIONS.map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={material === value}
-                      onClick={() => setMaterial(value)}
-                      className={`min-h-12 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                        material === value
-                          ? 'border-[#0c6e80] bg-[#0c6e80] text-white'
-                          : 'border-slate-300 bg-white text-slate-700 hover:border-[#0c6e80] hover:text-[#0c6e80]'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <div>
-                <label htmlFor="collection-note" className="mb-2 block text-sm font-semibold text-slate-800">
-                  Note <span className="font-normal text-slate-500">(optional)</span>
-                </label>
-                <textarea
-                  id="collection-note"
-                  className={`${inputClassName} min-h-24 resize-y`}
-                  rows="3"
-                  maxLength="2000"
-                  placeholder="Add a short note if needed"
-                  value={note}
-                  onChange={(event) => setNote(event.target.value)}
-                />
-              </div>
+              <div><label htmlFor="collection-boat" className="mb-2 block text-sm font-semibold">{t('record.step_boat')}</label><select id="collection-boat" className={inputClassName} value={boatId} onChange={(event) => setBoatId(event.target.value)} disabled={saving}>{availableBoats.map((boat) => <option key={boat.id} value={boat.id}>{boat.code} · {boat.name}</option>)}</select></div>
+              <div><label htmlFor="weight-kg" className="mb-2 block text-sm font-semibold">{t('record.weight_kg')} *</label><input id="weight-kg" type="number" min="0.001" step="any" inputMode="decimal" required className={inputClassName} placeholder={t('record.weight_hint')} value={weight} onChange={(event) => setWeight(event.target.value)} disabled={saving} /></div>
+              <fieldset disabled={saving}><legend className="mb-2 text-sm font-semibold">{t('record.material')} *</legend><div className="flex flex-wrap gap-2">{MATERIALS.map((value) => <button key={value} type="button" aria-pressed={material === value} onClick={() => setMaterial(value)} className={`min-h-12 rounded-full border px-4 py-2 text-sm font-semibold ${material === value ? 'border-[#0c6e80] bg-[#0c6e80] text-white' : 'border-slate-300 bg-white text-slate-700'}`}>{t(`material.${value.toLowerCase()}`)}</button>)}</div></fieldset>
+              <div><label htmlFor="collection-note" className="mb-2 block text-sm font-semibold">{t('record.note')} {t('common.optional')}</label><textarea id="collection-note" maxLength={500} rows={3} className={inputClassName} placeholder={t('record.note_hint')} value={note} onChange={(event) => setNote(event.target.value)} disabled={saving} /><p className="mt-1 text-xs text-slate-500">{note.length}/500</p></div>
+              <section aria-label={t('f2.gps')} className="space-y-3 rounded-xl border border-slate-200 p-4">
+                <h2 className="text-sm font-semibold">{t('f2.gps')} *</h2>
+                {gpsBusy && <p role="status" className="text-sm">{t('record.gps_getting')}</p>}
+                {gpsError && <F2Notice tone="error" role="alert">{gpsError}</F2Notice>}
+                {gps && <div className="text-sm text-slate-600"><p>{gps.latitude.toFixed(5)}, {gps.longitude.toFixed(5)}</p><p>{t('f2.accuracy', { meters: Math.round(gps.gps_accuracy_m) })}</p><p>{t('f2.capture_time', { time: new Date(gps.gps_captured_at).toLocaleTimeString() })}</p></div>}
+                <F2Button type="button" variant="secondary" disabled={gpsBusy || saving} onClick={getGps}>{t('f2.gps_retry')}</F2Button>
+              </section>
             </div>
-
-            <div>
-              <p className="mb-2 text-sm font-semibold text-slate-800">
-                Photo of the scale <span className="text-red-700">*</span>
-              </p>
-              <div className="flex min-h-72 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-[#f5f8f9] p-4 text-center">
-                {photoPreview ? (
-                  <img src={photoPreview} alt="Preview of the scale photo" className="max-h-64 w-full rounded-lg object-contain" />
-                ) : (
-                  <div className="max-w-xs">
-                    <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#e1f0f2] text-xl text-[#0c6e80]" aria-hidden="true">＋</span>
-                    <p className="text-sm font-semibold text-slate-800">Show the scale reading clearly</p>
-                    <p className="mt-1 text-xs text-slate-500">One photo is required. You can retake it before saving.</p>
-                  </div>
-                )}
-                <label className="mt-4 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                  {photo ? 'Retake photo' : 'Take photo'}
-                  <input
-                    className="sr-only"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={(event) => {
-                      const nextPhoto = event.target.files?.[0] || null
-                      event.target.value = ''
-                      if (nextPhoto && !nextPhoto.type.startsWith('image/')) {
-                        setPhotoError('Choose an image file for the scale photo.')
-                        setPhoto(null)
-                      } else {
-                        setPhotoError('')
-                        setPhoto(nextPhoto)
-                      }
-                    }}
-                  />
-                </label>
-                {photoError && <p className="mt-2 text-sm text-red-700">{photoError}</p>}
-                {photo && <p className="mt-2 text-xs text-slate-500">{Math.max(1, Math.round(photo.size / 1024))} KB</p>}
+            <section>
+              <h2 className="mb-2 text-sm font-semibold">{t('record.scale_photo')} *</h2>
+              <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-[#f5f8f9] p-4 text-center">
+                {photo ? <img ref={photoImage} alt={t('record.photo_preview')} className="max-h-72 w-full rounded-lg object-contain" /> : <div><p className="font-semibold">{t('record.scale_photo_hint')}</p><p className="mt-2 text-sm text-slate-500">{t('record.scale_photo_rule')}</p></div>}
+                <label className="mt-4 inline-flex min-h-12 cursor-pointer items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold">{t(photoBusy ? 'f2.processing' : photo ? 'record.retake_photo' : 'record.take_photo')}<input type="file" accept="image/*" capture="environment" className="sr-only" onChange={choosePhoto} disabled={photoBusy || saving} /></label>
+                {photo && <p className="mt-2 text-xs text-slate-500">{t('f2.image_size', { size: Math.max(1, Math.round(photo.size / 1024)) })}</p>}
               </div>
-            </div>
+            </section>
           </div>
-
-          <div className="mt-7 flex flex-col-reverse justify-between gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center">
-            <p className="text-xs text-slate-500">Preview only. The form is not connected to the API yet.</p>
-            <F2Button type="submit" disabled={saving || !photo || !material}>
-              {saving ? 'Saving preview…' : 'Save collection'}
-            </F2Button>
-          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 pt-5"><p className="max-w-lg text-xs text-slate-500">{t('f2.save_hint')}</p><F2Button type="submit" disabled={saving || photoBusy || gpsBusy}>{t(saving ? 'record.saving' : 'record.save')}</F2Button></div>
         </F2Card>
       </form>
     </F2Page>

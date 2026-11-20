@@ -1,17 +1,16 @@
-# F2 · Record a collection (backend)
+# F2: Record a collection backend
 
-**Owner:** Masaaki Kato · **Frontend:** `client/src/features/f2_record_collection/` · **Tests:** `server/tests/f2_record_collection/`
+Owner: Masaaki Kato. Uses the PM's Record / Photo schema and make_record_number unchanged (D9-D11).
 
-Creates the evidence: a crew member's record with boat, weight, material, one photo of the scale and GPS. Upload is idempotent so offline sync can safely retry.
+| Endpoint | Permission | Purpose |
+|---|---|---|
+| `GET /api/records/boats` | Crew | DB-backed active boat options while F5's boat endpoint is still a mock |
+| `POST /api/records` | Crew | Multipart record + scale photo; 201 for new, 200 for an idempotent retry |
+| `GET /api/records/submissions/{client_id}` | Crew, own only | Restore an F2 confirmation without taking over F3's record endpoints |
+| `GET /api/photos/{record_id}` | Crew owner or sponsor | Private image bytes, no-store cache policy |
 
-| File | Purpose |
-|---|---|
-| `router.py` | `POST /api/records` (multipart), `GET /api/photos/{record_id}` |
-| `schemas.py` | Pydantic response models |
-| `models.py` | SQLModel table `records` (DM-3) – read by F3, F4, F5 |
-| `service.py` | Validation, photo storage, record number, idempotency |
-| `seed.py` | Demo records in all statuses |
+Required multipart fields: client_id (UUID), boat_id, weight_kg (>0 and finite), material (MATERIALS), latitude (-90..90), longitude (-180..180), gps_accuracy_m (>=0 and finite), recorded_at (ISO timestamp with time zone), photo (JPEG/PNG/WebP, at most 5 MiB). Optional: note (500 chars), expected_crew_id (only checks offline ownership). Actual crew_id is always the session's user; posted status/crew_id fields never control the saved record.
 
-**Spec:** FR-2.1 – FR-2.8, BR-1, BR-3, BR-5, BR-10, BR-11, NFR-16, NFR-19 · **Figma:** flow 02
+New records always start PENDING. Records/photos commit together. Same-owner retries return the original including its current review status, even if the boat is now inactive. UNIQUE client_id plus rollback/re-query handles concurrent retries. Another owner's client_id returns 409. No update/delete endpoints are added.
 
-Rules to remember: every record arrives as PENDING (BR-1) · records are immutable (BR-3) · same `client_id` twice returns the existing record (BR-10) · `crew_id` comes from the session, never from the request body (BR-11).
+CHG-004's two photos, SHA-256 and landing-site flags depend on the PM's future coordinated schema update (`docs/CHANGE_REQUESTS.md`). The current one-photo schema remains compatible with F3/F4/F5.
