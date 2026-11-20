@@ -1003,5 +1003,195 @@
     "eng_word": "Flagged for review",
     "th_word": "",
     "burmese_word": "စစ်ဆေးရန် အမှတ်အသားပြုထားသည်"
+  },
+  "f2.title": {
+    "eng_word": "Record collection",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.capacity": {
+    "eng_word": "Capacity {kg} kg",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.cached_boats": {
+    "eng_word": "Using the boat list saved on this phone. The server checks the boat again when you send.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.no_boats": {
+    "eng_word": "No active boats are available. Connect to the server and retry.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.loading": {
+    "eng_word": "Loading…",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.db_saved": {
+    "eng_word": "Saved to the server",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.saved_phone": {
+    "eng_word": "Saved on this phone",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.pending_send": {
+    "eng_word": "Will be sent when there is signal and your crew session is active.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.record_number": {
+    "eng_word": "Record number",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.boat": {
+    "eng_word": "Boat",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.status": {
+    "eng_word": "Status",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.gps": {
+    "eng_word": "Capture location",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.gps_retry": {
+    "eng_word": "Capture GPS again",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.storage_error": {
+    "eng_word": "Could not save on this phone. Keep this page open and free storage, then try again.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.note_limit": {
+    "eng_word": "Up to 500 characters",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.capture_time": {
+    "eng_word": "GPS captured at {time}",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.sent_confirmed": {
+    "eng_word": "The server confirmed this record. Its photo and details are stored in the database.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.queue_link": {
+    "eng_word": "Send saved records",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.queue_hint": {
+    "eng_word": "Only records saved by this crew account are sent.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.send_all": {
+    "eng_word": "Send all",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.sending": {
+    "eng_word": "Sending…",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.sent": {
+    "eng_word": "Sent",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.queue_empty": {
+    "eng_word": "All sent. No records are waiting on this phone.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.sent_count": {
+    "eng_word": "{count} records sent in this attempt.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.not_found": {
+    "eng_word": "No saved record was found for this account.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.review": {
+    "eng_word": "View saved details",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.signin": {
+    "eng_word": "Sign in",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.crew_required": {
+    "eng_word": "Sign in with a crew member account to record a collection. The demo crew account is mreyes.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.checking": {
+    "eng_word": "Checking your session…",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.processing": {
+    "eng_word": "Preparing photo…",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.save_hint": {
+    "eng_word": "Saved on this phone first, then sent to the server. GPS and a photo are required.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.accuracy": {
+    "eng_word": "GPS accuracy: {meters} m",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.latitude": {
+    "eng_word": "Latitude",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.longitude": {
+    "eng_word": "Longitude",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.gps_wait": {
+    "eng_word": "Wait for GPS or capture it again before saving.",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.image_size": {
+    "eng_word": "Photo size: {size} KB",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.recorded": {
+    "eng_word": "Recorded at",
+    "th_word": "",
+    "burmese_word": ""
+  },
+  "f2.confirm_loading": {
+    "eng_word": "Loading your saved record…",
+    "th_word": "",
+    "burmese_word": ""
   }
 }
