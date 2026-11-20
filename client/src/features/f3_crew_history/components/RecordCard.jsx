@@ -24,7 +24,7 @@ function formatRecordTime(recordedAt, displayTime) {
 }
 
 export default function RecordCard({ record }) {
-  const recordId = record.record_number || record.id
+  const recordId = record.id ?? record.record_number
   const boatCode = record.boat_code || record.boat?.code || 'HC-14'
   const formattedTime = formatRecordTime(record.recorded_at, record.display_time)
   const materialLabel = formatMaterial(record.material)

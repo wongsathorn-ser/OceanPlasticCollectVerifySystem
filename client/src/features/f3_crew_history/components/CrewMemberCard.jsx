@@ -1,16 +1,20 @@
 // F3 · Crew home & history - Crew member card for Sponsor / Management
 import { Link } from 'react-router'
+import { formatLastDate, formatWeight } from '../mockData.js'
 
 export default function CrewMemberCard({ member }) {
   const boatsText = Array.isArray(member.boats)
-    ? member.boats.join(' · ')
-    : member.boats || 'HC-14'
+    ? member.boats.length
+      ? member.boats.join(' · ')
+      : 'No boats yet'
+    : member.boats || '—'
 
   const verifiedPercent = member.verified_percentage ?? 0
   const recordsCount = member.records_count ?? 0
   const verifiedWeight =
-    member.verified_weight_display ??
-    (member.verified_kg !== undefined ? `${(member.verified_kg / 1000).toFixed(1)} t` : '0.0 t')
+    member.verified_weight_display ?? formatWeight(member.verified_kg ?? 0)
+  const lastDisplay =
+    member.last_record_display || formatLastDate(member.last_record_at)
 
   return (
     <Link
@@ -51,7 +55,7 @@ export default function CrewMemberCard({ member }) {
 
       {/* Bottom Row: Metadata (% verified · n records · Last: date) */}
       <p className="text-xs text-slate-400 mt-3 font-normal">
-        {verifiedPercent}% verified · {recordsCount} records · Last: {member.last_record_display || '—'}
+        {verifiedPercent}% verified · {recordsCount} records · Last: {lastDisplay}
       </p>
     </Link>
   )

@@ -1,17 +1,36 @@
 // F3 · Crew home & history - Role-based route guard component
 import { useContext } from 'react'
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import { AuthContext } from '../../f1_accounts/authContext.js'
 import { ROLE_LABELS } from '../../../shared/layout/navConfig.js'
+
+const ROLE_HOME = {
+  CREW_MEMBER: '/home',
+  SPONSOR_MANAGEMENT: '/fleet',
+  ADMIN: '/admin/requests',
+}
 
 export default function RequireRole({ allowedRoles, children }) {
   const auth = useContext(AuthContext)
   const user = auth?.user
+  const checking = auth?.checking
 
-  // If user is signed in with a defined role, enforce allowedRoles
-  if (user && user.role && allowedRoles && !allowedRoles.includes(user.role)) {
+  if (checking) {
+    return (
+      <div className="max-w-2xl mx-auto my-12 text-center text-sm text-slate-400">
+        Checking session...
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/signin" replace />
+  }
+
+  // Enforce allowedRoles for the signed-in user
+  if (user.role && allowedRoles && !allowedRoles.includes(user.role)) {
     const userRoleLabel = ROLE_LABELS[user.role] || user.role
-    const homeLink = user.role === 'CREW_MEMBER' ? '/home' : user.role === 'ADMIN' ? '/admin/requests' : '/crew'
+    const homeLink = ROLE_HOME[user.role] || '/signin'
 
     return (
       <div className="max-w-2xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-xs">
