@@ -4,10 +4,26 @@ Status: **approved, in progress.** The schema update for CHG-002/003/004 is done
 
 | ID | Change | Main owners | Status |
 |---|---|---|---|
-| CHG-001 | Thai and Burmese on crew screens | PM (helper, switcher), F1, F2, F3 | translation file ready: `client/translations.json` |
-| CHG-002 | Crew reward per verified kg | PM (rates admin), F3, F4, F5 | prepared |
-| CHG-003 | Auto-verification for low-risk records | F4 (+ F2, F3) | prepared |
-| CHG-004 | Stronger evidence (2 photos, landing site, duplicate photo) | F2 (+ PM, F3, F4) | prepared |
+| CHG-001 | Thai and Burmese on crew screens | PM (helper, switcher), F1, F2, F3 | language context + switcher done; F1 screens and crew menu translated. **F2, F3: use `t()`** |
+| CHG-002 | Crew reward per verified kg | PM (helpers), F3, F5 (+ rates admin) | rules done in `app/core/rewards.py`. **F3: earnings on crew home; F5: payout per boat + rates admin** |
+| CHG-003 | Auto-verification for low-risk records | PM (helpers), F4, F2, F3 | rules done in `app/core/auto_verify.py`. **F2: call after save; F4: spot-check tab + reverse; F3: show label** |
+| CHG-004 | Stronger evidence (2 photos, landing site, duplicate photo) | PM (helpers), F2, F5 (landing sites admin) | checks done in `app/core/evidence.py`. **F2: two photos + call checks; F5: landing sites admin** |
+
+## Ready-made helpers (26 Nov) - call these, do not rewrite the rules
+
+| Use | Call | Owner who wires it in |
+|---|---|---|
+| Crew home earnings (CHG-002) | `crew_earnings(db, user.id)` → `{"this_month", "to_date", "pending"}` (THB) | F3 |
+| Payout per boat (CHG-002) | `boat_payouts(db)` → `{boat_id: THB}` | F5 |
+| Reward of one record | `rates = load_rates(db)`; `record_reward(record, rates)` | F3 (record detail) |
+| Save a record with evidence (CHG-004) | `add_photo(db, record, "PLASTIC", data, type)`, `add_photo(db, record, "SCALE", data, type)`, `check_evidence(db, record)`, then `db.commit()` | F2 |
+| Is the phone near a landing site? | `within_landing_site(db, lat, lon)` → `(site or None, metres)` | F2 (endpoint for the app to check before saving) |
+| Auto-verify after saving (CHG-003) | `apply_auto_verify(db, record)` (commits) | F2 |
+| Spot-check decisions | `confirm_spot_check(db, id, user.id)`, `reject_spot_check(db, id, user.id, reason)` | F4 |
+| Reverse a verified record (CHG-002/003) | `reverse_record(db, id, user.id, reason)` | F4 |
+| Settings | `get_setting(db, "spot_check_percent")` | anyone |
+
+Modules: `server/app/core/rewards.py`, `auto_verify.py`, `evidence.py`, `app_settings.py`. Tests showing every rule: `server/tests/test_change_rules.py`.
 
 **Schema update done (D13):** `reward_rates`, `landing_sites`, `record_flags`, `app_settings`; new columns on `records`, `photos` and `boats`. Column list: `docs/DATABASE.md` section 3. `GET /api/photos/{record_id}` now takes `?kind=SCALE` (default) or `?kind=PLASTIC`.
 
@@ -19,9 +35,18 @@ Status: **approved, in progress.** The schema update for CHG-002/003/004 is done
   - Keep `{name}`, `{count}`, `{kg}` and other words in curly braces exactly as they are; never change a key.
   - Save as UTF-8 and keep it valid JSON (VS Code shows errors in red).
   - Developers: new crew-facing text gets a new key here instead of fixed English in the page. Keys starting with `chg002_`, `chg003_`, `chg004_` are for the upcoming changes.
-- To build (PM): a `LanguageContext` (React context, taught) with the chosen language saved in `localStorage`, a `t(key, values)` helper that replaces `{name}`-style placeholders, and a language switcher on the sign-in page and the crew layout.
-- Then each owner replaces fixed English text in their crew screens with `t('...')`.
-- Server error messages shown to crews have keys under `server_error.*`; the frontend maps the English `detail` to the key.
+- **Done (PM):** `LanguageProvider` (Context + `useReducer`) in `main.jsx`, the switcher on the sign-in / create account pages and in the crew side menu, language saved on the phone. F1 screens and the crew menu are translated.
+- **Each owner:** replace fixed English text in crew screens with `t('...')`:
+
+  ```jsx
+  import { useContext } from 'react'
+  import { LanguageContext } from '../../shared/i18n/languageContext.js'
+
+  const { t, translateServerMessage } = useContext(LanguageContext)
+  <h1>{t('home.welcome', { name: user.name })}</h1>
+  {error && <p>{translateServerMessage(error.detail)}</p>}   // English server message -> translated
+  ```
+- F2's own adapter (`f2_record_collection/i18n.js`) uses the same saved language, so it keeps working; Masaaki can switch to the shared context later.
 
 ## CHG-002 Crew reward per verified kilogram
 
