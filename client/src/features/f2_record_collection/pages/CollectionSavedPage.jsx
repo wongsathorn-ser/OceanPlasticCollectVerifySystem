@@ -1,57 +1,66 @@
-// F2 · Collection saved | FR-2.3 visual preview
-import { Link, useLocation, useNavigate } from 'react-router'
-
-import { F2Button, F2Card, F2Notice, F2Page } from '../components/F2Page.jsx'
-import { MATERIAL_LABELS } from '../mockData.js'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
+import { F2Card, F2Notice, F2Page } from '../components/F2Page.jsx'
+import { getSubmission } from '../api.js'
+import { useF2User } from '../hooks.js'
+import { useF2Language } from '../i18n.js'
+import { getDraft, getReceipt } from '../offline/localDb.js'
+import { syncQueue } from '../offline/syncQueue.js'
 
 export default function CollectionSavedPage() {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { record, previewOnly } = location.state || {}
-
+  const [params] = useSearchParams()
+  const clientId = params.get('client_id')
+  const { user } = useF2User()
+  const { t } = useF2Language()
+  const [record, setRecord] = useState(null)
+  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    if (!clientId || !user?.id) return undefined
+    let active = true
+    async function load() {
+      try {
+        const draft = await getDraft(clientId)
+        const receipt = await getReceipt(user.id, clientId)
+        if (!active) return
+        if (receipt) { setRecord(receipt); setSent(true); setError('') }
+        else if (draft?.owner_id === user.id) { setRecord(draft); setSent(false); setError(draft.last_error || '') }
+        if (navigator.onLine && !draft) {
+          const latest = await getSubmission(clientId)
+          if (active) { setRecord(latest); setSent(true); setError('') }
+        }
+      } catch (failure) { if (active) setError(failure.message) }
+      finally { if (active) setLoading(false) }
+    }
+    load()
+    syncQueue().catch((failure) => { if (active) setError(failure.message) })
+    window.addEventListener('f2-queue-change', load)
+    window.addEventListener('online', load)
+    return () => { active = false; window.removeEventListener('f2-queue-change', load); window.removeEventListener('online', load) }
+  }, [clientId, user?.id])
   return (
-    <F2Page title="Collection saved" description="Review the collection details." width="max-w-3xl">
-      <F2Card className="mx-auto max-w-2xl p-6 sm:p-8">
-        <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-700" aria-hidden="true">✓</span>
-          <h2 className="text-xl font-semibold text-slate-900">Saved</h2>
-          <p className="mt-1 text-sm text-slate-600">Collection details are ready for review.</p>
-        </div>
-
-        {previewOnly && (
-          <F2Notice tone="calm" className="mb-5">
-            UI preview only. This record has not been saved to the database.
-          </F2Notice>
-        )}
-
-        {record ? (
+    <F2Page title={t('record.saved_title')} description={t('record.saved_subtitle')} eyebrow={t('f2.title')} width="max-w-3xl">
+      <F2Card>
+        {loading && clientId && <p role="status">{t('f2.confirm_loading')}</p>}
+        {error && <F2Notice tone="warning" className="mb-4" role="alert">{error} <Link to="/send" className="underline">{t('f2.queue_link')}</Link></F2Notice>}
+        {record ? <>
+          <F2Notice tone={sent ? 'success' : 'info'} className="mb-5"><h2 className="font-semibold">{t(sent ? 'f2.db_saved' : 'f2.saved_phone')}</h2><p className="mt-1">{t(sent ? 'f2.sent_confirmed' : 'f2.pending_send')}</p></F2Notice>
           <dl className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-            <SummaryRow label="Record number" value={record.record_number} />
-            <SummaryRow label="Boat" value={`${record.boat_code} · ${record.boat_name}`} />
-            <SummaryRow label="Weight" value={`${Number(record.weight_kg).toLocaleString()} kg`} />
-            <SummaryRow label="Material" value={MATERIAL_LABELS[record.material] || record.material} />
-            <SummaryRow label="Status" value={record.status} />
+            {[
+              [t('f2.record_number'), record.record_number || '—'],
+              [t('f2.boat'), `${record.boat_code} · ${record.boat_name}`],
+              [t('record.weight_kg'), `${record.weight_kg} kg`],
+              [t('record.material'), t(`material.${record.material.toLowerCase()}`)],
+              [t('f2.status'), sent ? t(`status.${record.status.toLowerCase()}`) : t('status.saved_on_phone')],
+              [t('f2.gps'), `${record.latitude.toFixed(5)}, ${record.longitude.toFixed(5)}`],
+              [t('f2.recorded'), new Date(record.recorded_at).toLocaleString()],
+            ].map(([label, value]) => <div key={label} className="flex flex-wrap justify-between gap-3 px-4 py-3 text-sm"><dt className="text-slate-500">{label}</dt><dd className="font-semibold text-slate-900">{value}</dd></div>)}
           </dl>
-        ) : (
-          <F2Notice tone="warning" className="mb-5">
-            No preview record is open. Start a new collection to see this screen.
-          </F2Notice>
-        )}
-
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-          <F2Button type="button" variant="secondary" onClick={() => navigate('/home')}>Back to home</F2Button>
-          <F2Button type="button" onClick={() => navigate('/record')}>Add another</F2Button>
-        </div>
+          {sent && <img src={record.photo_url} alt={t('record.scale_photo')} className="mt-4 max-h-72 w-full rounded-lg object-contain" />}
+        </> : (!loading || !clientId) && <F2Notice tone="warning">{t('f2.not_found')}</F2Notice>}
+        <div className="mt-6 flex flex-wrap justify-between gap-3"><Link to="/home" className="text-sm font-semibold text-slate-600 underline">{t('record.back_to_home')}</Link><Link to="/send" className="text-sm font-semibold text-[#0c6e80] underline">{t('f2.queue_link')}</Link><Link to="/record" className="text-sm font-semibold text-[#0c6e80] underline">{t('record.add_another')}</Link></div>
       </F2Card>
     </F2Page>
-  )
-}
-
-function SummaryRow({ label, value }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="font-semibold text-slate-900">{value}</dd>
-    </div>
   )
 }

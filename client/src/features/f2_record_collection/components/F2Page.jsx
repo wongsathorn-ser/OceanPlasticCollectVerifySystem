@@ -1,4 +1,7 @@
+import { useF2Language } from '../i18n.js'
+
 export function F2Page({ title, description, eyebrow = 'RECORD COLLECTION', children, actions, width = 'max-w-5xl' }) {
+  const { language, setLanguage, t } = useF2Language()
   return (
     <div className={`mx-auto w-full ${width}`}>
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-5">
@@ -7,7 +10,14 @@ export function F2Page({ title, description, eyebrow = 'RECORD COLLECTION', chil
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h1>
           {description && <p className="mt-1 max-w-2xl text-sm text-slate-600">{description}</p>}
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="text-xs text-slate-600">{t('language.label')}
+            <select aria-label={t('language.label')} value={language} onChange={(event) => setLanguage(event.target.value)} className="ml-2 min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900">
+              <option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option>
+            </select>
+          </label>
+          {actions}
+        </div>
       </header>
       {children}
     </div>
