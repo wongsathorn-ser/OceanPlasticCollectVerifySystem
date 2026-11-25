@@ -1,298 +1,321 @@
 """Feature 5 - Fleet & boats service.
 
-Temporary mock service for F5 development.
-
-This service will later be replaced/updated to use the real
-PostgreSQL database through SQLModel.
+Fleet and boat data is stored in PostgreSQL through SQLModel.
 
 Owner: Natthachaimongkol Chayopathum
 """
 
-from copy import deepcopy
+from sqlmodel import Session, select
+
+from app.core.clock import thailand_month_start, thailand_year_start
+from app.features.f2_record_collection.models import Record
+from app.features.f5_fleet_boats.models import Boat
 
 
-# Mock boat data
+def _period_start(period: str):
+    """Return the UTC start datetime for the selected Thailand period."""
+    if period == "month":
+        return thailand_month_start()
 
-MOCK_BOATS = [
-    {
-        "id": 1,
-        "code": "HC-14",
-        "name": "Harbor Cleaner",
-        "capacity_kg": 1800,
-        "active": True,
-        "records": 96,
-    },
-    {
-        "id": 2,
-        "code": "SH-02",
-        "name": "Sea Harvest",
-        "capacity_kg": 2400,
-        "active": True,
-        "records": 71,
-    },
-    {
-        "id": 3,
-        "code": "RM-07",
-        "name": "River Mouth",
-        "capacity_kg": 900,
-        "active": True,
-        "records": 52,
-    },
-    {
-        "id": 4,
-        "code": "SL-03",
-        "name": "Shoreline Team A",
-        "capacity_kg": 400,
-        "active": True,
-        "records": 29,
-    },
-]
+    if period == "year":
+        return thailand_year_start()
 
-# Mock fleet data
+    return None
 
-MOCK_FLEET_SUMMARY = {
-    "month": {
-        "period": "month",
-        "verified_kg": 64800,
-        "pending_kg": 11200,
-        "records": 248,
-        "boats": 4,
-        "pending_records": 3,
-        "boats_by_verified": [
+
+def get_boats(db: Session):
+    """Return all boats with their number of records."""
+
+    boats = db.exec(
+        select(Boat).order_by(Boat.code)
+    ).all()
+
+    result = []
+
+    for boat in boats:
+        record_count = len(
+            db.exec(
+                select(Record).where(Record.boat_id == boat.id)
+            ).all()
+        )
+
+        result.append(
             {
-                "id": 1,
-                "code": "HC-14",
-                "name": "Harbor Cleaner",
-                "verified_kg": 31200,
-            },
-            {
-                "id": 2,
-                "code": "SH-02",
-                "name": "Sea Harvest",
-                "verified_kg": 18400,
-            },
-            {
-                "id": 3,
-                "code": "RM-07",
-                "name": "River Mouth",
-                "verified_kg": 10600,
-            },
-            {
-                "id": 4,
-                "code": "SL-03",
-                "name": "Shoreline Team A",
-                "verified_kg": 4600,
-            },
-        ],
-        "material_breakdown": [
-            {"material": "PET bottles", "verified_kg": 24100},
-            {"material": "HDPE rigid", "verified_kg": 17300},
-            {"material": "Fishing net / rope", "verified_kg": 12600},
-            {"material": "LDPE film", "verified_kg": 6900},
-            {"material": "Mixed", "verified_kg": 3900},
-        ],
-    },
-    "year": {
-        "period": "year",
-        "verified_kg": 312400,
-        "pending_kg": 24800,
-        "records": 1248,
-        "boats": 4,
-        "pending_records": 8,
-        "boats_by_verified": [
-            {
-                "id": 1,
-                "code": "HC-14",
-                "name": "Harbor Cleaner",
-                "verified_kg": 142800,
-            },
-            {
-                "id": 2,
-                "code": "SH-02",
-                "name": "Sea Harvest",
-                "verified_kg": 91800,
-            },
-            {
-                "id": 3,
-                "code": "RM-07",
-                "name": "River Mouth",
-                "verified_kg": 52400,
-            },
-            {
-                "id": 4,
-                "code": "SL-03",
-                "name": "Shoreline Team A",
-                "verified_kg": 25400,
-            },
-        ],
-        "material_breakdown": [
-            {"material": "PET bottles", "verified_kg": 118400},
-            {"material": "HDPE rigid", "verified_kg": 82400},
-            {"material": "Fishing net / rope", "verified_kg": 54600},
-            {"material": "LDPE film", "verified_kg": 34200},
-            {"material": "Mixed", "verified_kg": 22800},
-        ],
-    },
-}
+                "id": boat.id,
+                "code": boat.code,
+                "name": boat.name,
+                "capacity_kg": boat.capacity_kg,
+                "active": boat.active,
+                "records": record_count,
+            }
+        )
 
-MOCK_BOAT_PERFORMANCE = {
-    1: {
-        "month": {
-            "id": 1,
-            "code": "HC-14",
-            "name": "Harbor Cleaner",
-            "capacity_kg": 1800,
-            "active": True,
-            "verified_kg": 31200,
-            "records": 96,
-            "pending_kg": 1100,
-            "crew": 3,
-
-            "material_breakdown": [
-                {"material": "PET bottles", "verified_kg": 11400},
-                {"material": "HDPE rigid", "verified_kg": 8900},
-                {"material": "Fishing net / rope", "verified_kg": 6200},
-                {"material": "LDPE film", "verified_kg": 3100},
-                {"material": "Mixed", "verified_kg": 1600},
-            ],
-
-            "recent_records": [
-                {
-                    "id": 412,
-                    "record_number": "REC-0412",
-                    "weight_kg": 412,
-                    "material": "HDPE rigid",
-                    "status": "PENDING",
-                    "recorded_at": "2026-10-26T08:30:00",
-                },
-                {
-                    "id": 398,
-                    "record_number": "REC-0398",
-                    "weight_kg": 540,
-                    "material": "Mixed",
-                    "status": "VERIFIED",
-                    "recorded_at": "2026-11-02T15:20:00",
-                },
-                {
-                    "id": 381,
-                    "record_number": "REC-0381",
-                    "weight_kg": 335,
-                    "material": "LDPE film",
-                    "status": "VERIFIED",
-                    "recorded_at": "2026-10-31T14:48:00",
-                },
-            ],
-        },
-
-        "year": {
-            "id": 1,
-            "code": "HC-14",
-            "name": "Harbor Cleaner",
-            "capacity_kg": 1800,
-            "active": True,
-            "verified_kg": 142800,
-            "records": 420,
-            "pending_kg": 4800,
-            "crew": 6,
-
-            "material_breakdown": [
-                {"material": "PET bottles", "verified_kg": 51200},
-                {"material": "HDPE rigid", "verified_kg": 38600},
-                {"material": "Fishing net / rope", "verified_kg": 28100},
-                {"material": "LDPE film", "verified_kg": 15300},
-                {"material": "Mixed", "verified_kg": 9600},
-            ],
-
-            "recent_records": [
-                {
-                    "id": 412,
-                    "record_number": "REC-0412",
-                    "weight_kg": 412,
-                    "material": "HDPE rigid",
-                    "status": "PENDING",
-                    "recorded_at": "2026-10-26T08:30:00",
-                },
-                {
-                    "id": 398,
-                    "record_number": "REC-0398",
-                    "weight_kg": 540,
-                    "material": "Mixed",
-                    "status": "VERIFIED",
-                    "recorded_at": "2026-11-02T15:20:00",
-                },
-                {
-                    "id": 381,
-                    "record_number": "REC-0381",
-                    "weight_kg": 335,
-                    "material": "LDPE film",
-                    "status": "VERIFIED",
-                    "recorded_at": "2026-10-31T14:48:00",
-                },
-            ],
-        },
-    },
-}
-
-def get_boats():
-    """Return all boats."""
-    return deepcopy(MOCK_BOATS)
+    return result
 
 
-def create_boat(boat_data):
-    """Create a new boat in the mock data."""
-    next_id = max((boat["id"] for boat in MOCK_BOATS), default=0) + 1
+def create_boat(db: Session, boat_data):
+    """Create a new boat in PostgreSQL."""
 
-    boat = {
-        "id": next_id,
-        "code": boat_data["code"],
-        "name": boat_data["name"],
-        "capacity_kg": boat_data["capacity_kg"],
-        "active": boat_data.get("active", True),
+    existing = db.exec(
+        select(Boat).where(Boat.code == boat_data["code"])
+    ).first()
+
+    if existing is not None:
+        return None
+
+    boat = Boat(
+        code=boat_data["code"].strip(),
+        name=boat_data["name"].strip(),
+        capacity_kg=boat_data["capacity_kg"],
+        active=boat_data.get("active", True),
+    )
+
+    db.add(boat)
+    db.commit()
+    db.refresh(boat)
+
+    return {
+        "id": boat.id,
+        "code": boat.code,
+        "name": boat.name,
+        "capacity_kg": boat.capacity_kg,
+        "active": boat.active,
         "records": 0,
     }
 
-    MOCK_BOATS.append(boat)
 
-    return deepcopy(boat)
+def update_boat(db: Session, boat_id: int, boat_data):
+    """Update an existing boat in PostgreSQL."""
 
-
-def update_boat(boat_id, boat_data):
-    """Update an existing boat in the mock data."""
-    boat = next(
-        (item for item in MOCK_BOATS if item["id"] == boat_id),
-        None,
-    )
+    boat = db.get(Boat, boat_id)
 
     if boat is None:
         return None
 
-    for field in ("code", "name", "capacity_kg", "active"):
-        if field in boat_data and boat_data[field] is not None:
-            boat[field] = boat_data[field]
+    if "code" in boat_data and boat_data["code"] is not None:
+        boat.code = boat_data["code"].strip()
 
-    return deepcopy(boat)
+    if "name" in boat_data and boat_data["name"] is not None:
+        boat.name = boat_data["name"].strip()
+
+    if "capacity_kg" in boat_data and boat_data["capacity_kg"] is not None:
+        boat.capacity_kg = boat_data["capacity_kg"]
+
+    if "active" in boat_data and boat_data["active"] is not None:
+        boat.active = boat_data["active"]
+
+    db.add(boat)
+    db.commit()
+    db.refresh(boat)
+
+    record_count = len(
+        db.exec(
+            select(Record).where(Record.boat_id == boat.id)
+        ).all()
+    )
+
+    return {
+        "id": boat.id,
+        "code": boat.code,
+        "name": boat.name,
+        "capacity_kg": boat.capacity_kg,
+        "active": boat.active,
+        "records": record_count,
+    }
 
 
-def get_fleet_summary(period="month"):
-    """Return mock fleet summary for month or year."""
-    summary = MOCK_FLEET_SUMMARY.get(period)
+def get_fleet_summary(db: Session, period: str = "month"):
+    """Return fleet summary calculated from PostgreSQL records."""
 
-    if summary is None:
+    start = _period_start(period)
+
+    if start is None:
         return None
 
-    return deepcopy(summary)
+    boats = db.exec(
+        select(Boat).order_by(Boat.code)
+    ).all()
+
+    records = db.exec(
+        select(Record).where(Record.recorded_at >= start)
+    ).all()
+
+    verified_records = [
+        record
+        for record in records
+        if record.status == "VERIFIED"
+    ]
+
+    pending_records = [
+        record
+        for record in records
+        if record.status == "PENDING"
+    ]
+
+    verified_kg = sum(
+        record.weight_kg
+        for record in verified_records
+    )
+
+    pending_kg = sum(
+        record.weight_kg
+        for record in pending_records
+    )
+
+    boats_by_verified = []
+
+    for boat in boats:
+        boat_verified_kg = sum(
+            record.weight_kg
+            for record in verified_records
+            if record.boat_id == boat.id
+        )
+
+        boats_by_verified.append(
+            {
+                "id": boat.id,
+                "code": boat.code,
+                "name": boat.name,
+                "verified_kg": boat_verified_kg,
+            }
+        )
+
+    boats_by_verified.sort(
+        key=lambda item: item["verified_kg"],
+        reverse=True,
+    )
+
+    material_totals = {}
+
+    for record in verified_records:
+        material_totals[record.material] = (
+            material_totals.get(record.material, 0)
+            + record.weight_kg
+        )
+
+    material_breakdown = [
+        {
+            "material": material,
+            "verified_kg": weight,
+        }
+        for material, weight in material_totals.items()
+    ]
+
+    material_breakdown.sort(
+        key=lambda item: item["verified_kg"],
+        reverse=True,
+    )
+
+    return {
+        "period": period,
+        "verified_kg": verified_kg,
+        "pending_kg": pending_kg,
+        "records": len(records),
+        "boats": len(boats),
+        "pending_records": len(pending_records),
+        "boats_by_verified": boats_by_verified,
+        "material_breakdown": material_breakdown,
+    }
 
 
-def get_boat_performance(boat_id, period="month"):
-    """Return mock performance data for one boat and period."""
-    boat_data = MOCK_BOAT_PERFORMANCE.get(boat_id)
+def get_boat_performance(
+    db: Session,
+    boat_id: int,
+    period: str = "month",
+):
+    """Return performance information for one boat."""
 
-    if boat_data is None:
+    start = _period_start(period)
+
+    if start is None:
         return None
 
-    performance = boat_data.get(period)
+    boat = db.get(Boat, boat_id)
 
-    if performance is None:
+    if boat is None:
         return None
 
-    return deepcopy(performance)
+    records = db.exec(
+        select(Record)
+        .where(
+            Record.boat_id == boat_id,
+            Record.recorded_at >= start,
+        )
+        .order_by(Record.recorded_at.desc())
+    ).all()
+
+    verified_records = [
+        record
+        for record in records
+        if record.status == "VERIFIED"
+    ]
+
+    pending_records = [
+        record
+        for record in records
+        if record.status == "PENDING"
+    ]
+
+    verified_kg = sum(
+        record.weight_kg
+        for record in verified_records
+    )
+
+    pending_kg = sum(
+        record.weight_kg
+        for record in pending_records
+    )
+
+    crew_ids = {
+        record.crew_id
+        for record in records
+    }
+
+    material_totals = {}
+
+    for record in verified_records:
+        material_totals[record.material] = (
+            material_totals.get(record.material, 0)
+            + record.weight_kg
+        )
+
+    material_breakdown = [
+        {
+            "material": material,
+            "verified_kg": weight,
+        }
+        for material, weight in material_totals.items()
+    ]
+
+    material_breakdown.sort(
+        key=lambda item: item["verified_kg"],
+        reverse=True,
+    )
+
+    recent_records = []
+
+    for record in records[:10]:
+        recent_records.append(
+            {
+                "id": record.id,
+                "record_number": record.record_number,
+                "weight_kg": record.weight_kg,
+                "material": record.material,
+                "status": record.status,
+                "recorded_at": record.recorded_at.isoformat(),
+            }
+        )
+
+    return {
+        "id": boat.id,
+        "code": boat.code,
+        "name": boat.name,
+        "capacity_kg": boat.capacity_kg,
+        "active": boat.active,
+        "verified_kg": verified_kg,
+        "records": len(records),
+        "pending_kg": pending_kg,
+        "crew": len(crew_ids),
+        "material_breakdown": material_breakdown,
+        "recent_records": recent_records,
+    }
