@@ -14,11 +14,12 @@ Start again from the demo data:
     docker compose down -v      (deletes the database volume)
     docker compose up --build   (creates the tables and seeds them again)
 
-Order matters: users -> boats -> records (records point to both).
+Order matters: users -> settings -> boats, landing sites, rates -> records.
 """
 
 from sqlmodel import Session, select
 
+from app.core import app_settings
 from app.core.database import create_db_and_tables, engine
 from app.features.f1_accounts.models import User
 from app.features.f1_accounts.seed import seed as seed_accounts
@@ -28,9 +29,10 @@ from app.features.f5_fleet_boats.seed import seed as seed_boats
 
 def seed_all(session: Session) -> None:
     """Add all demo data in one transaction (all or nothing)."""
-    seed_accounts(session)  # F1: default admin + demo users of each role
-    seed_boats(session)     # F5: HC-14, SH-02, RM-07, SL-03
-    seed_records(session)   # F2: demo records in all three statuses + photos
+    seed_accounts(session)       # F1: default admin + demo users of each role
+    app_settings.seed(session)   # CHG-003/004 settings (50 kg, 10 records, 30 days, 10 %, 100 m)
+    seed_boats(session)          # F5: 4 boats, landing sites (CHG-004), reward rates (CHG-002)
+    seed_records(session)        # F2: records in all statuses, 2 photos each, flags, auto-verified
     session.commit()
 
 

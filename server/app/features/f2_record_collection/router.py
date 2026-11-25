@@ -62,13 +62,14 @@ def submission(client_id: str, user: Crew, db: SessionDep):
 
 
 @router.get("/photos/{record_id}")
-def get_photo(record_id: int, user: CurrentUser, db: SessionDep):
+def get_photo(record_id: int, user: CurrentUser, db: SessionDep, kind: str = "SCALE"):
+    # CHG-004: ?kind=SCALE (default, same as before) or ?kind=PLASTIC
     if user.role not in ("CREW_MEMBER", "SPONSOR_MANAGEMENT"):
         raise HTTPException(403, "You do not have permission to do this.")
     record = db.get(Record, record_id)
     if not record or (user.role == "CREW_MEMBER" and record.crew_id != user.id):
         raise HTTPException(404, "Record not found.")
-    photo = db.exec(select(Photo).where(Photo.record_id == record_id)).first()
+    photo = db.exec(select(Photo).where(Photo.record_id == record_id, Photo.kind == kind.upper())).first()
     if not photo:
         raise HTTPException(404, "Photo not found.")
     return Response(photo.data, media_type=photo.content_type, headers={

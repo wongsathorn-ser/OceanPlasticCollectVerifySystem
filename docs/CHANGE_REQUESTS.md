@@ -1,6 +1,6 @@
 # Change requests from the sponsor (18 Nov 2026)
 
-Status: **analysed, waiting for the team's decision** (change control, ITCS514 L09). Nothing below is built yet except the translation file for CHG-001. This page is the technical preparation, so each owner knows what is coming. Search the code for `TODO(CHG-00x)` to find the places that will change.
+Status: **approved, in progress.** The schema update for CHG-002/003/004 is done (decision D13, 25 Nov): all new tables and columns below exist, with demo data. The rules and screens are still to build. After pulling the schema update, everyone runs `docker compose down -v` and `docker compose up --build` once.
 
 | ID | Change | Main owners | Status |
 |---|---|---|---|
@@ -9,7 +9,7 @@ Status: **analysed, waiting for the team's decision** (change control, ITCS514 L
 | CHG-003 | Auto-verification for low-risk records | F4 (+ F2, F3) | prepared |
 | CHG-004 | Stronger evidence (2 photos, landing site, duplicate photo) | F2 (+ PM, F3, F4) | prepared |
 
-**Important:** all table changes for CHG-002, CHG-003 and CHG-004 go into **one schema update** by the PM (same as D11), so everyone runs `docker compose down -v` only once.
+**Schema update done (D13):** `reward_rates`, `landing_sites`, `record_flags`, `app_settings`; new columns on `records`, `photos` and `boats`. Column list: `docs/DATABASE.md` section 3. `GET /api/photos/{record_id}` now takes `?kind=SCALE` (default) or `?kind=PLASTIC`.
 
 ## CHG-001 Thai and Burmese language support
 

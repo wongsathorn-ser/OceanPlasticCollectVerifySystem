@@ -79,7 +79,7 @@ docker compose down                                # stop (keeps data)
 docker compose down -v                             # stop and wipe the database
 ```
 
-The first start creates the tables and adds the demo data (admin + demo users, 4 boats, 32 records with photos). Sign in as `admin` / `password123`. Your data stays when you stop and start again. Details: [`docs/DATABASE.md`](docs/DATABASE.md).
+The first start creates the tables and adds the demo data (admin + demo users, 4 boats, landing sites, reward rates, 37 records with two photos each, flags and auto-verified examples). Sign in as `admin` / `password123`. Your data stays when you stop and start again. Details: [`docs/DATABASE.md`](docs/DATABASE.md).
 
 ```bash
 docker compose down -v; docker compose up --build  # start again from the demo data (after a model change)
