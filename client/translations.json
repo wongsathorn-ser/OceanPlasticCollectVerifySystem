@@ -172,7 +172,7 @@
   "status.rejected": {
     "eng_word": "Rejected",
     "th_word": "ปฏิเสธแล้ว",
-    "burmese_word": "ပယ်ချပြီး"
+    "burmese_word": "ငြင်းပယ်ခံရသည်"
   },
   "status.saved_on_phone": {
     "eng_word": "Saved on this phone",
@@ -687,7 +687,7 @@
   "record_detail.rejection_reason": {
     "eng_word": "Reason for rejection",
     "th_word": "เหตุผลที่ปฏิเสธ",
-    "burmese_word": "ပယ်ချရသည့် အကြောင်းရင်း"
+    "burmese_word": "ငြင်းပယ်ခံရသည့် အကြောင်းရင်း"
   },
   "record.which_boat": {
     "eng_word": "Which boat?",
@@ -937,7 +937,7 @@
   "chg002_rewards.no_reward_rejected": {
     "eng_word": "Rejected records earn nothing.",
     "th_word": "รายการที่ถูกปฏิเสธจะไม่ได้รับค่าตอบแทน",
-    "burmese_word": "ပယ်ချခံရသော မှတ်တမ်းများအတွက် ဆုကြေးငွေ မရရှိပါ။"
+    "burmese_word": "ငြင်းပယ်ခံရသော မှတ်တမ်းများအတွက် ဆုကြေးငွေ မရရှိပါ။"
   },
   "chg002_rewards.reward_reversed": {
     "eng_word": "Reward reversed",
@@ -1193,5 +1193,20 @@
     "eng_word": "Loading your saved record…",
     "th_word": "",
     "burmese_word": "သိမ်းဆည်းထားသော မှတ်တမ်းကို တင်နေသည်…"
+  },
+  "f3.view_on_map": {
+    "eng_word": "View on map",
+    "th_word": "",
+    "burmese_word": "မြေပုံပေါ်တွင် ကြည့်ရန်"
+  },
+  "f3.reject_reason_unclear_reading": {
+    "eng_word": "The scale reading is not readable in the photo. Please record this load again.",
+    "th_word": "",
+    "burmese_word": "ဓာတ်ပုံတွင် ချိန်ခွင်အလေးချိန်ကို ဖတ်၍မရနိုင်ပါ။ ဤဝန်ကို ထပ်မံမှတ်တမ်းတင်ပါ။"
+  },
+  "f3.record_load_again": {
+    "eng_word": "record this load again",
+    "th_word": "",
+    "burmese_word": "ဤဝန်ကို ထပ်မံမှတ်တမ်းတင်ပါ"
   }
 }

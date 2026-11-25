@@ -1,8 +1,29 @@
 // F3 · Crew home & history - Digital scale / photo thumbnail
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-export default function DigitalScaleThumbnail({ weight, photoUrl }) {
+export default function DigitalScaleThumbnail({ weight, photoUrl, photoBlob }) {
   const [failedUrl, setFailedUrl] = useState(null)
+  const blobImgRef = useRef(null)
+  const hasBlob = typeof Blob !== 'undefined' && photoBlob instanceof Blob
+
+  useEffect(() => {
+    if (!hasBlob || !blobImgRef.current) return undefined
+    const url = URL.createObjectURL(photoBlob)
+    blobImgRef.current.src = url
+    return () => URL.revokeObjectURL(url)
+  }, [hasBlob, photoBlob])
+
+  if (hasBlob) {
+    return (
+      <div className="relative w-14 h-12 rounded-lg overflow-hidden bg-slate-900 shrink-0 border border-slate-200">
+        <img
+          ref={blobImgRef}
+          alt={`Scale reading ${weight} kg`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    )
+  }
 
   if (photoUrl && failedUrl !== photoUrl) {
     return (

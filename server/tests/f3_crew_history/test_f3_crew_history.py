@@ -196,3 +196,44 @@ def test_crew_overview_period_and_boat_search(f3_client, db):
     assert boat_search.status_code == 200
     assert any(c["name"] == "Marco Reyes" and boat_code in c["boats"] for c in boat_search.json())
 
+
+def test_sponsor_can_read_any_crew_record(f3_client, db):
+    sign_in(f3_client, "smendes")
+    marco = db.exec(select(User).where(User.username == "mreyes")).one()
+    rec = db.exec(select(Record).where(Record.crew_id == marco.id)).first()
+    assert rec is not None
+
+    res = f3_client.get(f"/api/records/{rec.id}")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["id"] == rec.id
+    assert data["crew_id"] == marco.id
+    assert data["crew_name"] == "Marco Reyes"
+
+
+def test_summary_rounds_decimal_weights_cleanly(f3_client, db):
+    from app.core.clock import utc_now
+    from app.features.f5_fleet_boats.models import Boat
+
+    jonas = db.exec(select(User).where(User.username == "jperet")).one()
+    boat = db.exec(select(Boat)).first()
+    now = utc_now()
+    for w in (12.1, 12.2, 12.3):
+        db.add(
+            Record(
+                boat_id=boat.id,
+                crew_id=jonas.id,
+                weight_kg=w,
+                material="MIXED",
+                recorded_at=now,
+                status="VERIFIED",
+            )
+        )
+    db.commit()
+
+    sign_in(f3_client, "jperet")
+    res = f3_client.get("/api/me/summary")
+    assert res.status_code == 200
+    assert res.json()["today_verified_kg"] == 36.6
+
+

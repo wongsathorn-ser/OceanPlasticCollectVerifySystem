@@ -1,8 +1,8 @@
 // F3 · Crew home & history - Role-based route guard component
-import { useContext } from 'react'
 import { Link, Navigate } from 'react-router'
-import { AuthContext } from '../../f1_accounts/authContext.js'
 import { ROLE_LABELS } from '../../../shared/layout/navConfig.js'
+import { useF3Language } from '../i18n.js'
+import { useF3User } from '../offlineQueue.js'
 
 const ROLE_HOME = {
   CREW_MEMBER: '/home',
@@ -11,14 +11,13 @@ const ROLE_HOME = {
 }
 
 export default function RequireRole({ allowedRoles, children }) {
-  const auth = useContext(AuthContext)
-  const user = auth?.user
-  const checking = auth?.checking
+  const { user, checking } = useF3User()
+  const { t } = useF3Language()
 
   if (checking) {
     return (
       <div className="max-w-2xl mx-auto my-12 text-center text-sm text-slate-400">
-        Checking session...
+        {t('common.loading')}
       </div>
     )
   }
