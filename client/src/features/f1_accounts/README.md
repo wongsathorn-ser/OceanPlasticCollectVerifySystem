@@ -59,5 +59,4 @@ const { user } = useContext(AuthContext) // null when nobody is signed in; user.
 
 ## Still to do for F1 (shared files - agree with the team first)
 
-- `shared/layout/AppLayout.jsx`: show only the signed-in user's menu, their name/role and a log-out button (currently the template shows all three menus).
-- `App.jsx`: guard signed-in routes with each route's `roles`, and send `/` to the user's home (`ROLE_HOME`).
+- Done (26 Nov): `AppLayout.jsx` shows only the signed-in user's menu, name, role and a log-out button; `App.jsx` guards every signed-in route with its `roles` (`shared/layout/RequireRole.jsx`) and sends `/` to the user's home; F1 public screens are in English, Thai and Burmese (CHG-001).

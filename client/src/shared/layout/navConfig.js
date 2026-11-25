@@ -6,11 +6,19 @@ export const ROLE_LABELS = {
   ADMIN: 'Administrator',
 }
 
+// CHG-001: translation keys (client/translations.json) for screens crews can see
+export const ROLE_KEYS = {
+  CREW_MEMBER: 'role.crew_member',
+  SPONSOR_MANAGEMENT: 'role.sponsor_management',
+  ADMIN: 'role.administrator',
+}
+
 export const NAV_BY_ROLE = {
   CREW_MEMBER: [
-    { to: '/home', label: 'Home' },
-    { to: '/history', label: 'History' },
-    { to: '/profile', label: 'Profile' },
+    // `key` = translation key; only the crew menu is translated (CHG-001)
+    { to: '/home', label: 'Home', key: 'nav.home' },
+    { to: '/history', label: 'History', key: 'nav.history' },
+    { to: '/profile', label: 'Profile', key: 'nav.profile' },
   ],
   SPONSOR_MANAGEMENT: [
     { to: '/fleet', label: 'Fleet' },
