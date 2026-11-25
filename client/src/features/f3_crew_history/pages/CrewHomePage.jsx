@@ -1,12 +1,11 @@
 // F3 · Crew home & history - owner: Kaung Khant Paing
 // Figma: 03 Personal dashboard | Spec: FR-3.1, BR-2
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { LanguageContext } from '../../../shared/i18n/languageContext.js'
 import { getMyRecords, getMySummary } from '../api.js'
 import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 import RecordCard from '../components/RecordCard.jsx'
-import { useF3Language } from '../i18n.js'
 import { DEFAULT_RECORDS } from '../mockData.js'
 import { useF3User, useOfflineDrafts } from '../offlineQueue.js'
 
@@ -30,7 +29,7 @@ const DEFAULT_SUMMARY = {
 export default function CrewHomePage() {
   const { user, offline } = useF3User()
   const navigate = useNavigate()
-  const { t } = useF3Language()
+  const { t } = useContext(LanguageContext)
 
   const [summary, setSummary] = useState(EMPTY_SUMMARY)
   const [remoteRecords, setRemoteRecords] = useState([])
@@ -134,19 +133,16 @@ export default function CrewHomePage() {
           </p>
         </div>
 
-        {/* Language switcher + Action: Add a collection */}
-        <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
-          <LanguageSwitcher />
-          <Link
-            to="/record"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-teal-800 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            {t('home.add_collection')}
-          </Link>
-        </div>
+        {/* Action: Add a collection */}
+        <Link
+          to="/record"
+          className="inline-flex items-center justify-center gap-2 self-start sm:self-auto rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-teal-800 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          {t('home.add_collection')}
+        </Link>
       </div>
 
       {/* 2. Offline Records Alert (if any records are saved on phone) */}

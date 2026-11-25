@@ -1,11 +1,10 @@
 // F3 · Crew home & history - owner: Kaung Khant Paing
 // Figma: 03 My history | Spec: FR-3.2
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { LanguageContext } from '../../../shared/i18n/languageContext.js'
 import { getMyRecords } from '../api.js'
 import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 import RecordCard from '../components/RecordCard.jsx'
-import { useF3Language } from '../i18n.js'
 import { DEFAULT_RECORDS } from '../mockData.js'
 import { useF3User, useOfflineDrafts } from '../offlineQueue.js'
 
@@ -34,7 +33,7 @@ function mergeAndDeduplicateRecords(offlineRecords, remoteRecords) {
 
 export default function MyHistoryPage() {
   const { user, offline } = useF3User()
-  const { t, tStatus } = useF3Language()
+  const { t } = useContext(LanguageContext)
   const [activeFilter, setActiveFilter] = useState('ALL')
   const [remoteRecords, setRemoteRecords] = useState([])
   const [loading, setLoading] = useState(true)
@@ -129,7 +128,7 @@ export default function MyHistoryPage() {
         }}
       />
 
-      {/* Header: Title, Subtitle, Language Switcher, and Filter Tabs */}
+      {/* Header: Title, Subtitle, and Filter Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
@@ -140,33 +139,30 @@ export default function MyHistoryPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
-          <LanguageSwitcher />
-          {/* Status Filter Tabs */}
-          <div
-            role="tablist"
-            aria-label={t('history.filter_label')}
-            className="inline-flex items-center bg-[#eef2f6] p-1 rounded-xl border border-slate-200/50"
-          >
-            {FILTER_TABS.map((tab) => {
-              const isActive = activeFilter === tab.key
-              return (
-                <button
-                  key={tab.key}
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setActiveFilter(tab.key)}
-                  className={`px-4 sm:px-5 py-1.5 rounded-lg text-sm font-medium transition-all select-none ${
-                    isActive
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900 bg-transparent'
-                  }`}
-                >
-                  {t(tab.labelKey)}
-                </button>
-              )
-            })}
-          </div>
+        {/* Status Filter Tabs */}
+        <div
+          role="tablist"
+          aria-label={t('history.filter_label')}
+          className="inline-flex items-center self-start sm:self-auto bg-[#eef2f6] p-1 rounded-xl border border-slate-200/50"
+        >
+          {FILTER_TABS.map((tab) => {
+            const isActive = activeFilter === tab.key
+            return (
+              <button
+                key={tab.key}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveFilter(tab.key)}
+                className={`px-4 sm:px-5 py-1.5 rounded-lg text-sm font-medium transition-all select-none ${
+                  isActive
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 bg-transparent'
+                }`}
+              >
+                {t(tab.labelKey)}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -179,7 +175,9 @@ export default function MyHistoryPage() {
             <p className="text-base font-semibold text-slate-800">
               {activeFilter === 'ALL'
                 ? t('history.empty')
-                : t('history.empty_filtered', { status: tStatus(activeFilter) })}
+                : t('history.empty_filtered', {
+                    status: t(FILTER_TABS.find((tab) => tab.key === activeFilter)?.labelKey || 'status.unknown'),
+                  })}
             </p>
           </div>
         ) : (

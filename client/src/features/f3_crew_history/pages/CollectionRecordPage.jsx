@@ -1,14 +1,21 @@
 // F3 · Crew home & history - owner: Kaung Khant Paing
 // Figma: 03 Collection record | Spec: FR-3.3
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { LanguageContext, translate } from '../../../shared/i18n/languageContext.js'
 import { getRecordById } from '../api.js'
 import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
-import LanguageSwitcher from '../components/LanguageSwitcher.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
-import { useF3Language } from '../i18n.js'
 import { DEFAULT_RECORDS } from '../mockData.js'
 import { findOfflineDraft, useF3User } from '../offlineQueue.js'
+
+const MATERIAL_KEYS = {
+  PET_BOTTLES: 'material.pet_bottles',
+  HDPE_RIGID: 'material.hdpe_rigid',
+  FISHING_NET_ROPE: 'material.fishing_net_rope',
+  LDPE_FILM: 'material.ldpe_film',
+  MIXED: 'material.mixed',
+}
 
 function formatDetailDate(dateInput) {
   if (!dateInput) return '—'
@@ -28,7 +35,9 @@ export default function CollectionRecordPage() {
   const { recordId } = useParams()
   const navigate = useNavigate()
   const { user } = useF3User()
-  const { t, tMaterial } = useF3Language()
+  const { t: ctxT } = useContext(LanguageContext)
+  const isCrew = user?.role !== 'SPONSOR_MANAGEMENT' && user?.role !== 'ADMIN'
+  const t = (key, values) => (isCrew ? ctxT(key, values) : translate('en', key, values))
 
   // Match existing mock record if available (without falling back to arbitrary record)
   const matchedMock = DEFAULT_RECORDS.find(
@@ -189,28 +198,24 @@ export default function CollectionRecordPage() {
       />
 
       {/* 1. Header with Back Button */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            aria-label={t('common.back')}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200/80 shadow-xs hover:bg-slate-50 transition-colors text-slate-700"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label={t('common.back')}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200/80 shadow-xs hover:bg-slate-50 transition-colors text-slate-700"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
 
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              {t('record_detail.title')}
-            </h1>
-            <p className="text-xs sm:text-sm font-medium text-slate-400 mt-0.5">{recordNumber}</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            {t('record_detail.title')}
+          </h1>
+          <p className="text-xs sm:text-sm font-medium text-slate-400 mt-0.5">{recordNumber}</p>
         </div>
-
-        <LanguageSwitcher />
       </div>
 
       {/* 2. Rejection Banner (shown only when REJECTED) */}
@@ -301,7 +306,7 @@ export default function CollectionRecordPage() {
             <div className="flex items-center justify-between pt-3">
               <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.material')}</span>
               <span className="text-slate-800 font-medium text-xs sm:text-sm">
-                {tMaterial(record.material)}
+                {MATERIAL_KEYS[record.material] ? t(MATERIAL_KEYS[record.material]) : record.material || t('material.mixed')}
               </span>
             </div>
 

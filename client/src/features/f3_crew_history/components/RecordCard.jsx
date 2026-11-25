@@ -1,8 +1,18 @@
 // F3 · Crew home & history - Single collection record card
+import { useContext } from 'react'
 import { Link } from 'react-router'
-import { useF3Language } from '../i18n.js'
+import { LanguageContext, translate } from '../../../shared/i18n/languageContext.js'
+import { AuthContext } from '../../f1_accounts/authContext.js'
 import DigitalScaleThumbnail from './DigitalScaleThumbnail.jsx'
 import StatusBadge from './StatusBadge.jsx'
+
+const MATERIAL_KEYS = {
+  PET_BOTTLES: 'material.pet_bottles',
+  HDPE_RIGID: 'material.hdpe_rigid',
+  FISHING_NET_ROPE: 'material.fishing_net_rope',
+  LDPE_FILM: 'material.ldpe_film',
+  MIXED: 'material.mixed',
+}
 
 function formatRecordTime(recordedAt, displayTime, t) {
   if (displayTime) return displayTime
@@ -24,11 +34,16 @@ function formatRecordTime(recordedAt, displayTime, t) {
 }
 
 export default function RecordCard({ record }) {
-  const { t, tMaterial } = useF3Language()
+  const { user } = useContext(AuthContext)
+  const { t: ctxT } = useContext(LanguageContext)
+  const isCrew = user?.role !== 'SPONSOR_MANAGEMENT' && user?.role !== 'ADMIN'
+  const t = (key, values) => (isCrew ? ctxT(key, values) : translate('en', key, values))
+
   const recordId = record.id ?? record.record_number
   const boatCode = record.boat_code || record.boat?.code || 'HC-14'
   const formattedTime = formatRecordTime(record.recorded_at, record.display_time, t)
-  const materialLabel = tMaterial(record.material)
+  const materialKey = MATERIAL_KEYS[record.material]
+  const materialLabel = materialKey ? t(materialKey) : record.material || t('material.mixed')
 
   return (
     <Link
