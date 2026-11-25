@@ -19,9 +19,10 @@ from app.core.config import DATABASE_URL
 # Import every table model once, so SQLModel knows all tables (and the links
 # between them) before create_all() runs or the first query is made.
 # Features 3 and 4 only read or update existing tables, so they have no models.
+from app.core.app_settings import AppSetting  # noqa: E402,F401  app_settings (CHG-003/004)
 from app.features.f1_accounts.models import User, UserSession  # noqa: E402,F401  users, sessions
-from app.features.f2_record_collection.models import Photo, Record  # noqa: E402,F401  records, photos
-from app.features.f5_fleet_boats.models import Boat  # noqa: E402,F401  boats
+from app.features.f2_record_collection.models import Photo, Record, RecordFlag  # noqa: E402,F401  records, photos, record_flags
+from app.features.f5_fleet_boats.models import Boat, LandingSite, RewardRate  # noqa: E402,F401  boats, landing_sites, reward_rates
 
 # pool_pre_ping re-checks connections (Render may restart the free database)
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)

@@ -43,11 +43,17 @@ All models are imported in `server/app/core/database.py`; `create_all` creates m
 |---|---|---|---|
 | `users` | `User` (f1_accounts/models.py) | F1 | `id`, `name`, `email` (unique), `username` (unique), `password` (plain text, D8), `role`, `status`, `created_at` |
 | `sessions` | `UserSession` (f1_accounts/models.py) | F1 | `id` (SHA-256 of the cookie), `user_id` → users, `created_at`, `expires_at` |
-| `boats` | `Boat` (f5_fleet_boats/models.py) | F5 | `id`, `code` (unique), `name`, `capacity_kg`, `active`, `created_at` |
-| `records` | `Record` (f2_record_collection/models.py) | F2 (F3/F4/F5 read; F4 decides) | `id`, `client_id` (unique, offline retry), `record_number` (`REC-1043`), `boat_id` → boats, `crew_id` → users, `weight_kg`, `material`, `note`, `latitude`, `longitude`, `gps_accuracy_m`, `recorded_at`, `status`, `reviewed_by` → users, `reviewed_at`, `reason`, `created_at` |
-| `photos` | `Photo` (f2_record_collection/models.py) | F2 | `id`, `record_id` → records (unique: one photo per record), `content_type`, `size_bytes`, `data` (bytes) |
+| `boats` | `Boat` (f5_fleet_boats/models.py) | F5 | `id`, `code` (unique), `name`, `capacity_kg`, `active`, `auto_verify_blocked_until` (CHG-003), `created_at` |
+| `records` | `Record` (f2_record_collection/models.py) | F2 (F3/F4/F5 read; F4 decides) | `id`, `client_id` (unique, offline retry), `record_number` (`REC-1043`), `boat_id` → boats, `crew_id` → users, `weight_kg`, `material`, `note`, `latitude`, `longitude`, `gps_accuracy_m`, `recorded_at`, `status`, `reviewed_by` → users, `reviewed_at`, `reason`, `created_at`; CHG-004 `landing_site_id` → landing_sites; CHG-003 `auto_verified`, `verified_rule`, `spot_check`, `spot_checked_by` → users, `spot_checked_at`; CHG-002/003 `reversed_by` → users, `reversed_at`, `reversal_reason` |
+| `photos` | `Photo` (f2_record_collection/models.py) | F2 | `id`, `record_id` → records, `kind` (`PLASTIC` or `SCALE`, unique per record – CHG-004), `sha256` (indexed, duplicate check), `content_type`, `size_bytes`, `data` (bytes) |
+| `record_flags` | `RecordFlag` (f2_record_collection/models.py) | F2 (F4 reads) | `id`, `record_id` → records, `flag` (`DUPLICATE_PHOTO`, `OUTSIDE_LANDING_SITE`), `detail`, `created_at` – CHG-004; any flag stops auto-verify (CHG-003) |
+| `landing_sites` | `LandingSite` (f5_fleet_boats/models.py) | F5 (admin) | `id`, `name` (unique), `kind` (`PIER` or `PORT`), `latitude`, `longitude`, `active` – CHG-004 |
+| `reward_rates` | `RewardRate` (f5_fleet_boats/models.py) | F5 (admin) | `id`, `material`, `rate_thb_per_kg`, `valid_from` (date), `created_by` → users – CHG-002; a new rate is a new row, never an edit |
+| `app_settings` | `AppSetting` (core/app_settings.py) | shared | `key`, `value`, `description` – CHG-003/004 numbers: `auto_verify_max_kg` 50, `auto_verify_min_verified` 10, `auto_verify_window_days` 30, `spot_check_percent` 10, `auto_verify_block_days` 30, `landing_site_radius_m` 100. Read with `get_setting(session, key)` |
 
-Relationships (`Relationship(back_populates=...)`, ORM Part 2): `User.sessions` ↔ `UserSession.user` (cascade delete), `Boat.records` ↔ `Record.boat`.
+Relationships (`Relationship(back_populates=...)`, ORM Part 2): `User.sessions` ↔ `UserSession.user` (cascade delete), `Boat.records` ↔ `Record.boat`, `Record.flags` ↔ `RecordFlag.record` (cascade delete).
+
+Demo data for the changes: 3 active landing sites (+1 inactive) around Phuket, reward rates for all materials (PET 7 → 8 THB/kg 14 days ago, to show the rate history), two photos on every record, 3 auto-verified records (one waiting for a spot-check), one record flagged `DUPLICATE_PHOTO` and one `OUTSIDE_LANDING_SITE`.
 
 Speed: columns used in `where`/`order_by` are indexed (`status`, `crew_id`, `boat_id`, `recorded_at`, …). Photos are in their own table, so `select(Record)` never loads images (D9).
 
@@ -57,6 +63,7 @@ Values used everywhere:
 - user status: `PENDING`, `ACTIVE`, `REJECTED`, `SUSPENDED`
 - record status: `PENDING`, `VERIFIED`, `REJECTED` (`STATUSES` in F2 models)
 - materials: `PET_BOTTLES`, `HDPE_RIGID`, `FISHING_NET_ROPE`, `LDPE_FILM`, `MIXED` (`MATERIALS` in F2 models)
+- photo kinds: `PLASTIC`, `SCALE` (`PHOTO_KINDS`); flags: `DUPLICATE_PHOTO`, `OUTSIDE_LANDING_SITE` (`FLAGS`); landing site kinds: `PIER`, `PORT`
 - times are stored in **UTC**; "today / this month / this year" use **Thailand time** (D10)
 
 ## 4. Use the database in your feature
