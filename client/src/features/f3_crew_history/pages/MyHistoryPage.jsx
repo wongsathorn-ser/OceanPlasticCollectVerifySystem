@@ -3,8 +3,9 @@
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { AuthContext } from '../../f1_accounts/authContext.js'
 import { getMyRecords } from '../api.js'
+import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
 import RecordCard from '../components/RecordCard.jsx'
-import { DEFAULT_RECORDS } from '../mockData.js'
+import { DEFAULT_RECORDS, readOfflineRecords } from '../mockData.js'
 
 const FILTER_TABS = [
   { key: 'ALL', label: 'All' },
@@ -12,24 +13,6 @@ const FILTER_TABS = [
   { key: 'VERIFIED', label: 'Verified' },
   { key: 'REJECTED', label: 'Rejected' },
 ]
-
-// Reads any un-synced collection records stored on this phone (FR-3.2)
-function getOfflineRecords() {
-  try {
-    const raw = localStorage.getItem('ocean_offline_records')
-    const list = raw ? JSON.parse(raw) : []
-    return Array.isArray(list)
-      ? list.map((item, idx) => ({
-          ...item,
-          id: item.id || item.client_id || `offline-${idx}`,
-          record_number: item.record_number || 'LOCAL',
-          status: 'SAVED_ON_PHONE',
-        }))
-      : []
-  } catch {
-    return []
-  }
-}
 
 // Item 7: Deduplicate offline records against remote records to prevent duplicate rows after sync
 function mergeAndDeduplicateRecords(offlineRecords, remoteRecords) {
@@ -50,8 +33,8 @@ function mergeAndDeduplicateRecords(offlineRecords, remoteRecords) {
 export default function MyHistoryPage() {
   const auth = useContext(AuthContext)
   const [activeFilter, setActiveFilter] = useState('ALL')
-  const [records, setRecords] = useState(DEFAULT_RECORDS)
-  const [loading, setLoading] = useState(false)
+  const [records, setRecords] = useState([])
+  const [loading, setLoading] = useState(true)
   const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -62,15 +45,13 @@ export default function MyHistoryPage() {
     let ignore = false
 
     async function fetchData() {
-      const offline = getOfflineRecords()
+      const offline = readOfflineRecords()
       try {
         const remote = await getMyRecords()
         if (ignore) return
 
-        if (Array.isArray(remote) && remote.length > 0) {
+        if (Array.isArray(remote)) {
           setRecords(mergeAndDeduplicateRecords(offline, remote))
-        } else {
-          setRecords(mergeAndDeduplicateRecords(offline, DEFAULT_RECORDS))
         }
         setApiError(null)
       } catch (err) {
@@ -107,22 +88,13 @@ export default function MyHistoryPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* API Error Banner if request failed (Item 3) */}
-      {apiError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 flex items-center justify-between gap-3">
-          <span>
-            ⚠️ <strong>API {apiError.status ? `(${apiError.status})` : 'Error'}:</strong> {apiError.message}. Displaying demo data.
-          </span>
-          <button
-            onClick={() => {
-              setLoading(true)
-              setReloadKey((k) => k + 1)
-            }}
-            className="font-semibold underline shrink-0 hover:no-underline"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      <ApiErrorBanner
+        error={apiError}
+        onRetry={() => {
+          setLoading(true)
+          setReloadKey((k) => k + 1)
+        }}
+      />
 
       {/* Header: Title, Subtitle, and Filter Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -1,11 +1,16 @@
 // F3 · Crew home & history - Digital scale / photo thumbnail
+import { useState } from 'react'
+
 export default function DigitalScaleThumbnail({ weight, photoUrl }) {
-  if (photoUrl) {
+  const [failedUrl, setFailedUrl] = useState(null)
+
+  if (photoUrl && failedUrl !== photoUrl) {
     return (
       <div className="relative w-14 h-12 rounded-lg overflow-hidden bg-slate-900 shrink-0 border border-slate-200">
         <img
           src={photoUrl}
           alt={`Scale reading ${weight} kg`}
+          onError={() => setFailedUrl(photoUrl)}
           className="w-full h-full object-cover"
         />
       </div>

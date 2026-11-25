@@ -23,6 +23,7 @@ How to fill a row: what you asked (short prompt summary, no secrets), what you k
 | Date | Tool | What I asked | What I used | How I verified |
 |---|---|---|---|---|
 | 2026-11-09 | ChatGPT | Build a first F2 UI preview from the provided Figma screenshots | F2 preview pages with sample boats and route-based preview data; API, GPS and offline behavior deferred | Compared the screens with the supplied Figma frames; frontend lint, build, and browser checks remain to be run by the owner |
+| 2026-11-20 | ChatGPT (Codex) | Continue F2 from latest main and connect the UI to the PM database and cookie authentication | F2 record/photo API, ownership and idempotency checks, real boat picker, GPS/photo capture, IndexedDB drafts and retry, protected confirmation/photo loading, translation-key adapter; table models unchanged | 54 PostgreSQL backend tests passed; 11 isolated IndexedDB/sync/service-worker checks passed; live HTTP persistence checked across a backend restart; frontend lint/build passed (existing F5 warning); browser/device checks remain because Chromium could not launch here |
 
 ## F3 · Crew home & history (Kaung Khant Paing)
 

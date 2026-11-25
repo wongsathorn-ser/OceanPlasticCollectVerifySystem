@@ -1,13 +1,10 @@
-# F2 · Offline-first code (owner: Masaaki Kato)
+# F2 offline implementation
 
-Planned modules for FR-2.4 – FR-2.7 (all browser-native APIs, no extra libraries):
+- `localDb.js`: IndexedDB drafts (including photo Blob) and metadata/receipts. Writes resolve only after transaction completion. Original owner_id separates accounts.
+- `syncQueue.js`: actual session check, owner-scoped sends, SENDING state, failure recovery, acknowledgement validation and deletion only after confirmation. `expected_crew_id` lets the server reject a switched account.
+- `photo.js`: image decode, max 1600px JPEG conversion; 5 MiB ceiling.
+- `location.js`: browser Geolocation, permission errors, capture timestamp.
+- `bootstrap.js`: app-open/online sync, service worker registration, manifest link. Imported through the existing F2 route module, without editing shared app files.
+- `client/public/f2-sw.js`: network-first app shell/resources with offline fallback; no API or private photo caching.
 
-| Module | Job |
-|---|---|
-| `localDb.js` | IndexedDB store: every record + photo Blob is saved here **before** any network call; remember which user created it |
-| `syncQueue.js` | States SAVED_ON_PHONE → SENDING → SENT; send after each save, on app open, on the `online` event and on the Send button (no Background Sync - iOS Safari) |
-| `photo.js` | Camera input (`<input type="file" accept="image/*" capture="environment">`) and compression with a canvas (~1600 px JPEG) |
-| `location.js` | Geolocation (latitude, longitude, accuracy); explain how to enable it when permission is denied |
-| `client/public/sw.js` + `manifest.webmanifest` | Service worker that caches the app shell + web app manifest (installable PWA) |
-
-Delete a local record only after the server confirms it (returns its id / record number). GPS and service workers need HTTPS, so test on the deployed URL (or `localhost` on a computer).
+A successful IndexedDB write is required to leave the form. Session expiry or an offline server does not remove a draft. Reopening the app offline uses the last known crew identity for local capture only; the server still authenticates every upload. Sign in as the original crew member to send their drafts.

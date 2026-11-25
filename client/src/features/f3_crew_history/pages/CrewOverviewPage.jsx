@@ -2,14 +2,17 @@
 // Figma: 05 Crew overview | Spec: FR-3.4, BR-12
 import { useEffect, useMemo, useState } from 'react'
 import { getCrewOverview } from '../api.js'
+import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
 import CrewMemberCard from '../components/CrewMemberCard.jsx'
 import { DEFAULT_CREW_OVERVIEW } from '../mockData.js'
 
+const CURRENT_MONTH_LABEL = new Date().toLocaleString('en', { month: 'long', year: 'numeric' })
+
 export default function CrewOverviewPage() {
-  const [crewList, setCrewList] = useState(DEFAULT_CREW_OVERVIEW)
+  const [crewList, setCrewList] = useState([])
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -31,10 +34,8 @@ export default function CrewOverviewPage() {
         const data = await getCrewOverview(debouncedSearch)
         if (ignore) return
 
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setCrewList(data)
-        } else {
-          setCrewList(DEFAULT_CREW_OVERVIEW)
         }
         setApiError(null)
       } catch (err) {
@@ -75,28 +76,21 @@ export default function CrewOverviewPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* API Error Banner if request failed (Item 3) */}
-      {apiError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 flex items-center justify-between gap-3">
-          <span>
-            ⚠️ <strong>API {apiError.status ? `(${apiError.status})` : 'Error'}:</strong> {apiError.message}. Displaying demo data.
-          </span>
-          <button
-            onClick={() => {
-              setLoading(true)
-              setReloadKey((k) => k + 1)
-            }}
-            className="font-semibold underline shrink-0 hover:no-underline"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      <ApiErrorBanner
+        error={apiError}
+        onRetry={() => {
+          setLoading(true)
+          setReloadKey((k) => k + 1)
+        }}
+      />
 
       {/* 1. Header with Title, Count, and Search Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Crew</h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">November 2026 · {peopleCountText}</p>
+          <p className="text-sm font-medium text-slate-500 mt-1">
+            {CURRENT_MONTH_LABEL} · {peopleCountText}
+          </p>
         </div>
 
         {/* Search input with debounced API queries (Item 6) */}

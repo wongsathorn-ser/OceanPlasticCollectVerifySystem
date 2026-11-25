@@ -4,8 +4,17 @@ import { useContext, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { AuthContext } from '../../f1_accounts/authContext.js'
 import { getMyRecords, getMySummary } from '../api.js'
+import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
 import RecordCard from '../components/RecordCard.jsx'
-import { DEFAULT_RECORDS } from '../mockData.js'
+import { DEFAULT_RECORDS, readOfflineRecords } from '../mockData.js'
+
+const EMPTY_SUMMARY = {
+  today_verified_kg: 0,
+  today_pending_kg: 0,
+  month_verified_kg: 0,
+  month_pending_kg: 0,
+  pending_count: 0,
+}
 
 // Fallback summary (BR-2: verified and pending weight kept separate)
 const DEFAULT_SUMMARY = {
@@ -16,23 +25,12 @@ const DEFAULT_SUMMARY = {
   pending_count: 2,
 }
 
-// Reads any un-synced collection records stored on this phone
-function getOfflineRecords() {
-  try {
-    const raw = localStorage.getItem('ocean_offline_records')
-    const list = raw ? JSON.parse(raw) : []
-    return Array.isArray(list) ? list : []
-  } catch {
-    return []
-  }
-}
-
 export default function CrewHomePage() {
   const auth = useContext(AuthContext)
   const navigate = useNavigate()
 
-  const [summary, setSummary] = useState(DEFAULT_SUMMARY)
-  const [recentRecords, setRecentRecords] = useState(DEFAULT_RECORDS.slice(0, 4))
+  const [summary, setSummary] = useState(EMPTY_SUMMARY)
+  const [recentRecords, setRecentRecords] = useState([])
   const [offlineRecords, setOfflineRecords] = useState([])
   const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -45,7 +43,7 @@ export default function CrewHomePage() {
 
     async function fetchData() {
       // 1. Read offline records
-      const offline = getOfflineRecords()
+      const offline = readOfflineRecords()
       if (!ignore) setOfflineRecords(offline)
 
       // 2. Fetch summary stats from API
@@ -57,6 +55,7 @@ export default function CrewHomePage() {
         }
       } catch (err) {
         if (!ignore) {
+          setSummary(DEFAULT_SUMMARY)
           setApiError({
             status: err.status,
             message: err.detail || err.message || 'Unable to connect to server.',
@@ -67,11 +66,13 @@ export default function CrewHomePage() {
       // 3. Fetch recent records from API
       try {
         const recordsData = await getMyRecords()
-        if (!ignore && Array.isArray(recordsData) && recordsData.length > 0) {
+        if (!ignore && Array.isArray(recordsData)) {
           setRecentRecords(recordsData.slice(0, 4))
         }
       } catch {
-        // Fall back to default recent records
+        if (!ignore) {
+          setRecentRecords(DEFAULT_RECORDS.slice(0, 4))
+        }
       }
     }
 
@@ -85,19 +86,7 @@ export default function CrewHomePage() {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       {/* API Error Banner if request failed (Item 3) */}
-      {apiError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 flex items-center justify-between gap-3">
-          <span>
-            ⚠️ <strong>API {apiError.status ? `(${apiError.status})` : 'Error'}:</strong> {apiError.message}. Displaying demo data.
-          </span>
-          <button
-            onClick={() => setReloadKey((k) => k + 1)}
-            className="font-semibold underline shrink-0 hover:no-underline"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      <ApiErrorBanner error={apiError} onRetry={() => setReloadKey((k) => k + 1)} />
 
       {/* 1. Header & Greeting */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -242,11 +231,17 @@ export default function CrewHomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {recentRecords.map((record) => (
-            <RecordCard key={record.id || record.record_number} record={record} />
-          ))}
-        </div>
+        {recentRecords.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-sm text-slate-500">
+            No collections recorded yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {recentRecords.map((record) => (
+              <RecordCard key={record.id || record.record_number} record={record} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 6. BR-2 Note */}

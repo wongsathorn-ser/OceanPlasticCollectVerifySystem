@@ -1,10 +1,11 @@
 // F3 · Crew home & history - owner: Kaung Khant Paing
 // Figma: 03 Collection record | Spec: FR-3.3
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { getRecordById } from '../api.js'
+import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
-import { DEFAULT_RECORDS, formatMaterial } from '../mockData.js'
+import { DEFAULT_RECORDS, formatMaterial, readOfflineRecords } from '../mockData.js'
 
 function formatDetailDate(dateInput) {
   if (!dateInput) return '—'
@@ -28,7 +29,7 @@ export default function CollectionRecordPage() {
   const matchedMock = DEFAULT_RECORDS.find(
     (r) =>
       r.record_number?.toLowerCase() === (recordId || '').toLowerCase() ||
-      r.id?.toLowerCase() === (recordId || '').toLowerCase(),
+      String(r.id).toLowerCase() === (recordId || '').toLowerCase(),
   )
 
   const [record, setRecord] = useState(matchedMock || null)
@@ -36,6 +37,7 @@ export default function CollectionRecordPage() {
   const [notFound, setNotFound] = useState(false)
   const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [failedPhotoUrl, setFailedPhotoUrl] = useState(null)
 
   useEffect(() => {
     let ignore = false
@@ -47,22 +49,18 @@ export default function CollectionRecordPage() {
       }
 
       // 1. Check local phone storage
-      try {
-        const raw = localStorage.getItem('ocean_offline_records')
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          const found = parsed.find(
-            (item) => item.record_number === recordId || item.id === recordId || item.client_id === recordId,
-          )
-          if (found && !ignore) {
-            setRecord({ ...found, status: 'SAVED_ON_PHONE' })
-            setNotFound(false)
-            setLoading(false)
-            return
-          }
-        }
-      } catch {
-        // Ignore parse error
+      const offline = readOfflineRecords()
+      const found = offline.find(
+        (item) =>
+          item.record_number === recordId ||
+          String(item.id) === recordId ||
+          item.client_id === recordId,
+      )
+      if (found && !ignore) {
+        setRecord(found)
+        setNotFound(false)
+        setLoading(false)
+        return
       }
 
       // 2. Fetch from backend API
@@ -86,9 +84,6 @@ export default function CollectionRecordPage() {
             status: err.status,
             message: err.detail || err.message || 'Unable to fetch record from server.',
           })
-          if (!matchedMock) {
-            setNotFound(true)
-          }
         }
       } finally {
         if (!ignore) {
@@ -105,7 +100,7 @@ export default function CollectionRecordPage() {
   }, [recordId, reloadKey, matchedMock])
 
   // Item 1: Render clear not-found state when URL has invalid record ID
-  if (notFound || (!loading && !record)) {
+  if (notFound || (!loading && !record && !apiError)) {
     return (
       <div className="max-w-xl mx-auto my-12 bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-xs">
         <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mb-4">
@@ -122,12 +117,35 @@ export default function CollectionRecordPage() {
         <p className="text-sm text-slate-500 mt-2">
           No collection record matches <span className="font-mono font-semibold text-slate-700">{recordId}</span>.
         </p>
-        <Link
-          to="/history"
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
           className="mt-6 inline-flex items-center justify-center rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 transition-colors"
         >
-          Back to history
-        </Link>
+          Go back
+        </button>
+      </div>
+    )
+  }
+
+  if (apiError && !record) {
+    return (
+      <div className="max-w-xl mx-auto my-12 space-y-4">
+        <ApiErrorBanner
+          error={apiError}
+          showingDemo={false}
+          onRetry={() => {
+            setLoading(true)
+            setReloadKey((k) => k + 1)
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          Go back
+        </button>
       </div>
     )
   }
@@ -147,26 +165,22 @@ export default function CollectionRecordPage() {
   const reviewerName = record.reviewed_by_name || record.reviewed_by || 'Sofia Mendes'
   const rejectReason =
     record.reason || 'The scale reading is not readable in the photo. Please record this load again.'
+  const hasRepeatAdvice = rejectReason.toLowerCase().includes('record this load again')
+  const hasGps = record.latitude !== null && record.latitude !== undefined && record.longitude !== null && record.longitude !== undefined
+  const mapUrl = hasGps
+    ? `https://www.openstreetmap.org/?mlat=${record.latitude}&mlon=${record.longitude}#map=15/${record.latitude}/${record.longitude}`
+    : null
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* API Error Banner if request failed (Item 3) */}
-      {apiError && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800 flex items-center justify-between gap-3">
-          <span>
-            ⚠️ <strong>API {apiError.status ? `(${apiError.status})` : 'Error'}:</strong> {apiError.message}. Displaying demo data.
-          </span>
-          <button
-            onClick={() => {
-              setLoading(true)
-              setReloadKey((k) => k + 1)
-            }}
-            className="font-semibold underline shrink-0 hover:no-underline"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      <ApiErrorBanner
+        error={apiError}
+        onRetry={() => {
+          setLoading(true)
+          setReloadKey((k) => k + 1)
+        }}
+      />
 
       {/* 1. Header with Back Button */}
       <div className="flex items-center gap-4">
@@ -195,7 +209,10 @@ export default function CollectionRecordPage() {
           </svg>
           <p className="text-xs sm:text-sm leading-relaxed">
             <span className="font-bold text-rose-950">Rejected by {reviewerName}.</span>{' '}
-            <span className="text-rose-900">{rejectReason}</span>
+            <span className="text-rose-900">
+              {rejectReason}
+              {!hasRepeatAdvice && ' Please record this load again.'}
+            </span>
           </p>
         </div>
       )}
@@ -210,9 +227,14 @@ export default function CollectionRecordPage() {
           </div>
 
           {/* Scale Display Terminal (matches Figma) or Photo */}
-          {record.photo_url ? (
+          {record.photo_url && failedPhotoUrl !== record.photo_url ? (
             <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-200">
-              <img src={record.photo_url} alt="Scale photo" className="w-full h-full object-contain" />
+              <img
+                src={record.photo_url}
+                alt="Scale photo"
+                onError={() => setFailedPhotoUrl(record.photo_url)}
+                className="w-full h-full object-contain"
+              />
             </div>
           ) : (
             <div className="w-full h-80 sm:h-96 bg-[#0c2227] rounded-2xl flex flex-col items-center justify-center p-6 select-none">
@@ -275,6 +297,30 @@ export default function CollectionRecordPage() {
             <div className="flex items-center justify-between pt-3">
               <span className="text-slate-400 text-xs sm:text-sm">Status</span>
               <StatusBadge status={record.status} />
+            </div>
+
+            <div className="flex items-start justify-between gap-3 pt-3">
+              <span className="text-slate-400 text-xs sm:text-sm">GPS location</span>
+              {hasGps ? (
+                <div className="text-right text-xs sm:text-sm">
+                  <p className="font-mono text-slate-800">
+                    {Number(record.latitude).toFixed(5)}, {Number(record.longitude).toFixed(5)}
+                  </p>
+                  {record.gps_accuracy_m !== null && record.gps_accuracy_m !== undefined && (
+                    <p className="text-xs text-slate-400">±{record.gps_accuracy_m} m</p>
+                  )}
+                  <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-teal-700 hover:underline"
+                  >
+                    View on map ↗
+                  </a>
+                </div>
+              ) : (
+                <span className="text-slate-800 font-medium text-xs sm:text-sm">—</span>
+              )}
             </div>
 
             {record.note && (
