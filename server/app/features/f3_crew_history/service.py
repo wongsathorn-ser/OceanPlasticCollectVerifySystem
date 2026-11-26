@@ -8,6 +8,7 @@ is always reported separately (BR-2).
 from datetime import datetime, timezone
 
 from fastapi import HTTPException, status
+from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.core.clock import thailand_day_start, thailand_month_start
@@ -59,9 +60,9 @@ def _format_weight_display(kg: float) -> str:
 
 def _crew_stats(records: list[Record]) -> dict:
     """Compute verified/pending totals, verification %, count, and latest record info (BR-2)."""
-    verified_kg = sum(r.weight_kg for r in records if r.status == "VERIFIED")
-    pending_kg = sum(r.weight_kg for r in records if r.status == "PENDING")
-    total_kg = sum(r.weight_kg for r in records)
+    verified_kg = round(sum(r.weight_kg for r in records if r.status == "VERIFIED"), 2)
+    pending_kg = round(sum(r.weight_kg for r in records if r.status == "PENDING"), 2)
+    total_kg = round(sum(r.weight_kg for r in records), 2)
     last_rec = records[0] if records else None
     return {
         "verified_kg": verified_kg,
@@ -109,10 +110,10 @@ def get_my_summary(db: Session, crew_id: int) -> CrewSummaryOut:
     month_records = [r for r in records if _as_utc(r.recorded_at) >= month_start]
 
     return CrewSummaryOut(
-        today_verified_kg=sum(r.weight_kg for r in today_records if r.status == "VERIFIED"),
-        today_pending_kg=sum(r.weight_kg for r in today_records if r.status == "PENDING"),
-        month_verified_kg=sum(r.weight_kg for r in month_records if r.status == "VERIFIED"),
-        month_pending_kg=sum(r.weight_kg for r in month_records if r.status == "PENDING"),
+        today_verified_kg=round(sum(r.weight_kg for r in today_records if r.status == "VERIFIED"), 2),
+        today_pending_kg=round(sum(r.weight_kg for r in today_records if r.status == "PENDING"), 2),
+        month_verified_kg=round(sum(r.weight_kg for r in month_records if r.status == "VERIFIED"), 2),
+        month_pending_kg=round(sum(r.weight_kg for r in month_records if r.status == "PENDING"), 2),
         pending_count=sum(1 for r in records if r.status == "PENDING"),
     )
 
@@ -123,7 +124,7 @@ def get_my_records(
     record_status: str | None = None,
 ) -> list[RecordListItemOut]:
     """Return all records for a crew member, newest first, optionally filtered by status (FR-3.2)."""
-    statement = select(Record).where(Record.crew_id == crew_id)
+    statement = select(Record).options(selectinload(Record.boat)).where(Record.crew_id == crew_id)
 
     if record_status:
         normalized = record_status.strip().upper()
@@ -192,6 +193,7 @@ def get_crew_overview(
     start_at = _period_start(normalized_period)
     rec_stmt = (
         select(Record)
+        .options(selectinload(Record.boat))
         .where(Record.crew_id.in_([u.id for u in crew_users]))
         .order_by(Record.recorded_at.desc(), Record.id.desc())
     )
@@ -235,6 +237,7 @@ def get_crew_member_detail(db: Session, crew_id: int) -> CrewMemberDetailOut:
     all_records = list(
         db.exec(
             select(Record)
+            .options(selectinload(Record.boat))
             .where(Record.crew_id == crew_id)
             .order_by(Record.recorded_at.desc(), Record.id.desc())
         ).all()
@@ -253,7 +256,7 @@ def get_crew_member_detail(db: Session, crew_id: int) -> CrewMemberDetailOut:
         )
         entry["records"] += 1
         if r.status == "VERIFIED":
-            entry["verified_kg"] += float(r.weight_kg)
+            entry["verified_kg"] = round(entry["verified_kg"] + float(r.weight_kg), 2)
 
     boats_worked = [
         CrewBoatWorkOut(

@@ -1,57 +1,35 @@
 // F3 · Crew home & history - routes owned by Kaung Khant Paing.
-// Each route is { path, element, roles }; App.jsx picks them up automatically.
-import RequireRole from './components/RequireRole.jsx'
+// Each route is { path, element, roles }; App.jsx wraps each with shared RequireRole.
 import CollectionRecordPage from './pages/CollectionRecordPage.jsx'
 import CrewHomePage from './pages/CrewHomePage.jsx'
 import CrewMemberPage from './pages/CrewMemberPage.jsx'
 import CrewOverviewPage from './pages/CrewOverviewPage.jsx'
 import MyHistoryPage from './pages/MyHistoryPage.jsx'
 
-// Signed-in pages with client-side role enforcement (Item 5)
 export const appRoutes = [
   {
     path: '/home',
-    element: (
-      <RequireRole allowedRoles={['CREW_MEMBER']}>
-        <CrewHomePage />
-      </RequireRole>
-    ),
+    element: <CrewHomePage />,
     roles: ['CREW_MEMBER'],
   },
   {
     path: '/history',
-    element: (
-      <RequireRole allowedRoles={['CREW_MEMBER']}>
-        <MyHistoryPage />
-      </RequireRole>
-    ),
+    element: <MyHistoryPage />,
     roles: ['CREW_MEMBER'],
   },
   {
     path: '/records/:recordId',
-    element: (
-      <RequireRole allowedRoles={['CREW_MEMBER', 'SPONSOR_MANAGEMENT']}>
-        <CollectionRecordPage />
-      </RequireRole>
-    ),
+    element: <CollectionRecordPage />,
     roles: ['CREW_MEMBER', 'SPONSOR_MANAGEMENT'],
   },
   {
     path: '/crew',
-    element: (
-      <RequireRole allowedRoles={['SPONSOR_MANAGEMENT']}>
-        <CrewOverviewPage />
-      </RequireRole>
-    ),
+    element: <CrewOverviewPage />,
     roles: ['SPONSOR_MANAGEMENT'],
   },
   {
     path: '/crew/:crewId',
-    element: (
-      <RequireRole allowedRoles={['SPONSOR_MANAGEMENT']}>
-        <CrewMemberPage />
-      </RequireRole>
-    ),
+    element: <CrewMemberPage />,
     roles: ['SPONSOR_MANAGEMENT'],
   },
 ]

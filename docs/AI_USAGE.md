@@ -30,6 +30,9 @@ How to fill a row: what you asked (short prompt summary, no secrets), what you k
 
 | Date | Tool | What I asked | What I used | How I verified |
 |---|---|---|---|---|
+| 2026-11-04 | Antigravity (Gemini) | Build the F3 frontend screens from Figma (`features/crew-and-home-history`): Crew Home, My History, Collection Record detail, Sponsor Crew Overview, and Crew Member | F3 pages (`CrewHomePage`, `MyHistoryPage`, `CollectionRecordPage`, `CrewOverviewPage`, `CrewMemberPage`) and components (`RecordCard`, `StatusBadge`, `DigitalScaleThumbnail`) | `npm run lint`, `npm run build`, and browser UI checks across crew and sponsor views |
+| 2026-11-20 | Antigravity (Gemini) | Build the F3 backend API (`features/crew-and-home-history-backend`) for crew totals, personal history, record details, and sponsor crew overview following `BR-2` and `BR-12` | `f3_crew_history/{router.py,schemas.py,service.py}` (`/api/me/summary`, `/api/records/mine`, `/api/records/{id}`, `/api/crew`, `/api/crew/{id}`) and `test_f3_crew_history.py` | `python -m pytest tests/f3_crew_history` and API checks against PostgreSQL |
+| 2026-11-26 | Antigravity (Gemini) | Add `CHG-001` English/Thai/Burmese translations, integrate F2 IndexedDB offline drafts (`SAVED_ON_PHONE`), refactor F3 onto shared `LanguageContext` and `RequireRole`, and review/fix F3 frontend and backend | `offlineQueue.js`, updated F3 pages/components/`routes.jsx` using shared `LanguageContext` (English-only for sponsor/admin), `service.py` (`selectinload`, `round(..., 2)`), new tests in `test_f3_crew_history.py`, and `client/translations.json` | `pytest tests/f3_crew_history` + `test_change_rules.py` (22 passed), `npm run lint`, `npm run build`, and live Docker Compose checks |
 
 ## F4 · Verification (Hein Thant Si Thu)
 
