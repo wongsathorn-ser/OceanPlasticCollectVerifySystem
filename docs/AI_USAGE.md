@@ -38,6 +38,7 @@ How to fill a row: what you asked (short prompt summary, no secrets), what you k
 
 | Date | Tool | What I asked | What I used | How I verified |
 |---|---|---|---|---|
+| 2026-11-26 | OpenAI Codex | Implement F4 verification backend using the existing SQLModel records database and connect the F4 screens to persistent API data | F4 schemas, protected queue/history/detail/verify/reject endpoints, row-locked decision service, frontend API client and endpoint tests | PostgreSQL-backed full backend suite (89 passed), frontend lint and build; manual browser checks remain |
 
 ## F5 · Fleet & boats (Natthachaimongkol Chayopathum)
 
