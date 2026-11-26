@@ -7,10 +7,6 @@ export const MATERIAL_LABELS = {
   LDPE_FILM: 'LDPE film',
 }
 
-export function formatMaterial(material) {
-  return MATERIAL_LABELS[material] || material || 'Mixed'
-}
-
 export function formatWeight(kg) {
   const num = Number(kg ?? 0)
   return num >= 1000 ? `${(num / 1000).toFixed(1)} t` : `${Math.round(num)} kg`
@@ -32,23 +28,6 @@ export function formatJoinedDate(dateInput) {
   if (isNaN(date.getTime())) return String(dateInput)
   const month = date.toLocaleString('en', { month: 'long' })
   return `joined ${month} ${date.getFullYear()}`
-}
-
-export function readOfflineRecords() {
-  try {
-    const raw = localStorage.getItem('ocean_offline_records')
-    const list = raw ? JSON.parse(raw) : []
-    return Array.isArray(list)
-      ? list.map((item, idx) => ({
-          ...item,
-          id: item.id || item.client_id || `offline-${idx}`,
-          record_number: item.record_number || 'LOCAL',
-          status: 'SAVED_ON_PHONE',
-        }))
-      : []
-  } catch {
-    return []
-  }
 }
 
 export const DEFAULT_RECORDS = [

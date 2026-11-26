@@ -25,18 +25,24 @@ export default function CrewMemberPage() {
       m.name?.toLowerCase().includes((crewId || '').toLowerCase()),
   )
 
-  const [member, setMember] = useState(matchedMock || null)
-  const [loading, setLoading] = useState(!matchedMock)
-  const [notFound, setNotFound] = useState(false)
-  const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const requestKey = `${crewId || ''}:${reloadKey}`
+  const [fetchState, setFetchState] = useState(() =>
+    matchedMock ? { key: requestKey, member: matchedMock, notFound: false, apiError: null } : null,
+  )
+
+  const isCurrent = fetchState?.key === requestKey
+  const member = isCurrent ? fetchState.member : matchedMock || null
+  const loading = !isCurrent && !matchedMock
+  const notFound = isCurrent ? fetchState.notFound : false
+  const apiError = isCurrent ? fetchState.apiError : null
 
   useEffect(() => {
     let ignore = false
 
     async function fetchData() {
       if (!crewId) {
-        if (!ignore) setNotFound(true)
+        if (!ignore) setFetchState({ key: requestKey, member: null, notFound: true, apiError: null })
         return
       }
 
@@ -44,26 +50,24 @@ export default function CrewMemberPage() {
         const data = await getCrewMember(crewId)
         if (ignore) return
         if (data) {
-          setMember(data)
-          setNotFound(false)
-          setApiError(null)
-        } else if (!matchedMock) {
-          setNotFound(true)
+          setFetchState({ key: requestKey, member: data, notFound: false, apiError: null })
+        } else {
+          setFetchState({ key: requestKey, member: matchedMock || null, notFound: !matchedMock, apiError: null })
         }
       } catch (err) {
         if (ignore) return
         if (err.status === 404) {
-          setMember(null)
-          setNotFound(true)
+          setFetchState({ key: requestKey, member: null, notFound: true, apiError: null })
         } else {
-          setApiError({
-            status: err.status,
-            message: err.detail || err.message || 'Unable to fetch crew member from server.',
+          setFetchState({
+            key: requestKey,
+            member: matchedMock || null,
+            notFound: false,
+            apiError: {
+              status: err.status,
+              message: err.detail || err.message || 'Unable to fetch crew member from server.',
+            },
           })
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false)
         }
       }
     }
@@ -73,7 +77,7 @@ export default function CrewMemberPage() {
     return () => {
       ignore = true
     }
-  }, [crewId, reloadKey, matchedMock])
+  }, [crewId, requestKey, matchedMock])
 
   // Item 2: Render clear not-found state when URL has invalid crew ID
   if (notFound || (!loading && !member && !apiError)) {
@@ -109,10 +113,7 @@ export default function CrewMemberPage() {
         <ApiErrorBanner
           error={apiError}
           showingDemo={false}
-          onRetry={() => {
-            setLoading(true)
-            setReloadKey((k) => k + 1)
-          }}
+          onRetry={() => setReloadKey((k) => k + 1)}
         />
         <Link
           to="/crew"
@@ -154,10 +155,7 @@ export default function CrewMemberPage() {
       {/* API Error Banner if request failed (Item 3) */}
       <ApiErrorBanner
         error={apiError}
-        onRetry={() => {
-          setLoading(true)
-          setReloadKey((k) => k + 1)
-        }}
+        onRetry={() => setReloadKey((k) => k + 1)}
       />
 
       {/* 1. Header with Back Button and Name */}

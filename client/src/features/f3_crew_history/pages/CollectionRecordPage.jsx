@@ -1,11 +1,21 @@
 // F3 · Crew home & history - owner: Kaung Khant Paing
 // Figma: 03 Collection record | Spec: FR-3.3
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { LanguageContext, translate } from '../../../shared/i18n/languageContext.js'
 import { getRecordById } from '../api.js'
 import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
-import { DEFAULT_RECORDS, formatMaterial, readOfflineRecords } from '../mockData.js'
+import { DEFAULT_RECORDS } from '../mockData.js'
+import { findOfflineDraft, useF3User } from '../offlineQueue.js'
+
+const MATERIAL_KEYS = {
+  PET_BOTTLES: 'material.pet_bottles',
+  HDPE_RIGID: 'material.hdpe_rigid',
+  FISHING_NET_ROPE: 'material.fishing_net_rope',
+  LDPE_FILM: 'material.ldpe_film',
+  MIXED: 'material.mixed',
+}
 
 function formatDetailDate(dateInput) {
   if (!dateInput) return '—'
@@ -24,6 +34,10 @@ function formatDetailDate(dateInput) {
 export default function CollectionRecordPage() {
   const { recordId } = useParams()
   const navigate = useNavigate()
+  const { user } = useF3User()
+  const { t: ctxT } = useContext(LanguageContext)
+  const isCrew = user?.role !== 'SPONSOR_MANAGEMENT' && user?.role !== 'ADMIN'
+  const t = (key, values) => (isCrew ? ctxT(key, values) : translate('en', key, values))
 
   // Match existing mock record if available (without falling back to arbitrary record)
   const matchedMock = DEFAULT_RECORDS.find(
@@ -32,34 +46,42 @@ export default function CollectionRecordPage() {
       String(r.id).toLowerCase() === (recordId || '').toLowerCase(),
   )
 
-  const [record, setRecord] = useState(matchedMock || null)
-  const [loading, setLoading] = useState(!matchedMock)
-  const [notFound, setNotFound] = useState(false)
-  const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const requestKey = `${recordId || ''}:${reloadKey}`
+  const [fetchState, setFetchState] = useState(() =>
+    matchedMock ? { key: requestKey, record: matchedMock, notFound: false, apiError: null } : null,
+  )
   const [failedPhotoUrl, setFailedPhotoUrl] = useState(null)
+  const blobImgRef = useRef(null)
+
+  const isCurrent = fetchState?.key === requestKey
+  const record = isCurrent ? fetchState.record : matchedMock || null
+  const loading = !isCurrent && !matchedMock
+  const notFound = isCurrent ? fetchState.notFound : false
+  const apiError = isCurrent ? fetchState.apiError : null
+
+  const hasPhotoBlob = typeof Blob !== 'undefined' && record?.photo instanceof Blob
+
+  useEffect(() => {
+    if (!hasPhotoBlob || !blobImgRef.current) return undefined
+    const url = URL.createObjectURL(record.photo)
+    blobImgRef.current.src = url
+    return () => URL.revokeObjectURL(url)
+  }, [hasPhotoBlob, record?.photo])
 
   useEffect(() => {
     let ignore = false
 
     async function fetchData() {
       if (!recordId) {
-        if (!ignore) setNotFound(true)
+        if (!ignore) setFetchState({ key: requestKey, record: null, notFound: true, apiError: null })
         return
       }
 
-      // 1. Check local phone storage
-      const offline = readOfflineRecords()
-      const found = offline.find(
-        (item) =>
-          item.record_number === recordId ||
-          String(item.id) === recordId ||
-          item.client_id === recordId,
-      )
+      // 1. Check F2 IndexedDB offline drafts for the signed-in crew member
+      const found = await findOfflineDraft(recordId, user?.id)
       if (found && !ignore) {
-        setRecord(found)
-        setNotFound(false)
-        setLoading(false)
+        setFetchState({ key: requestKey, record: found, notFound: false, apiError: null })
         return
       }
 
@@ -68,26 +90,24 @@ export default function CollectionRecordPage() {
         const data = await getRecordById(recordId)
         if (ignore) return
         if (data) {
-          setRecord(data)
-          setNotFound(false)
-          setApiError(null)
-        } else if (!matchedMock) {
-          setNotFound(true)
+          setFetchState({ key: requestKey, record: data, notFound: false, apiError: null })
+        } else {
+          setFetchState({ key: requestKey, record: matchedMock || null, notFound: !matchedMock, apiError: null })
         }
       } catch (err) {
         if (ignore) return
         if (err.status === 404) {
-          setRecord(null)
-          setNotFound(true)
+          setFetchState({ key: requestKey, record: null, notFound: true, apiError: null })
         } else {
-          setApiError({
-            status: err.status,
-            message: err.detail || err.message || 'Unable to fetch record from server.',
+          setFetchState({
+            key: requestKey,
+            record: matchedMock || null,
+            notFound: false,
+            apiError: {
+              status: err.status,
+              message: err.detail || err.message || 'Unable to fetch record from server.',
+            },
           })
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false)
         }
       }
     }
@@ -97,7 +117,7 @@ export default function CollectionRecordPage() {
     return () => {
       ignore = true
     }
-  }, [recordId, reloadKey, matchedMock])
+  }, [recordId, requestKey, matchedMock, user?.id])
 
   // Item 1: Render clear not-found state when URL has invalid record ID
   if (notFound || (!loading && !record && !apiError)) {
@@ -113,16 +133,16 @@ export default function CollectionRecordPage() {
             />
           </svg>
         </div>
-        <h1 className="text-xl font-bold text-slate-900">Record not found</h1>
+        <h1 className="text-xl font-bold text-slate-900">{t('record_detail.not_found_title')}</h1>
         <p className="text-sm text-slate-500 mt-2">
-          No collection record matches <span className="font-mono font-semibold text-slate-700">{recordId}</span>.
+          {t('record_detail.not_found_body', { id: recordId })}
         </p>
         <button
           type="button"
           onClick={() => navigate(-1)}
           className="mt-6 inline-flex items-center justify-center rounded-xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 transition-colors"
         >
-          Go back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -134,17 +154,14 @@ export default function CollectionRecordPage() {
         <ApiErrorBanner
           error={apiError}
           showingDemo={false}
-          onRetry={() => {
-            setLoading(true)
-            setReloadKey((k) => k + 1)
-          }}
+          onRetry={() => setReloadKey((k) => k + 1)}
         />
         <button
           type="button"
           onClick={() => navigate(-1)}
           className="inline-flex items-center justify-center rounded-xl bg-white border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
         >
-          Go back
+          {t('common.back')}
         </button>
       </div>
     )
@@ -153,19 +170,20 @@ export default function CollectionRecordPage() {
   if (loading && !record) {
     return (
       <div className="max-w-6xl mx-auto py-12 text-center text-slate-400">
-        <p className="text-sm">Loading collection record...</p>
+        <p className="text-sm">{t('record_detail.loading')}</p>
       </div>
     )
   }
 
   const recordNumber = record.record_number || `REC-${record.id}`
-  const boatCode = record.boat_code || record.boat?.code || 'HC-14'
-  const boatName = record.boat_name || record.boat?.name || 'Harbor Cleaner'
+  const boatCode = record.boat_code || record.boat?.code || '—'
+  const boatName = record.boat_name || record.boat?.name || ''
   const isRejected = (record.status || '').toUpperCase() === 'REJECTED'
-  const reviewerName = record.reviewed_by_name || record.reviewed_by || 'Sofia Mendes'
-  const rejectReason =
-    record.reason || 'The scale reading is not readable in the photo. Please record this load again.'
-  const hasRepeatAdvice = rejectReason.toLowerCase().includes('record this load again')
+  const reviewerName = record.reviewed_by_name || record.reviewed_by || ''
+  const rejectReason = record.reason || t('f3.reject_reason_unclear_reading')
+  const repeatAdvice = t('f3.record_load_again')
+  const hasRepeatAdvice =
+    rejectReason.toLowerCase().includes(repeatAdvice.toLowerCase())
   const hasGps = record.latitude !== null && record.latitude !== undefined && record.longitude !== null && record.longitude !== undefined
   const mapUrl = hasGps
     ? `https://www.openstreetmap.org/?mlat=${record.latitude}&mlon=${record.longitude}#map=15/${record.latitude}/${record.longitude}`
@@ -176,10 +194,7 @@ export default function CollectionRecordPage() {
       {/* API Error Banner if request failed (Item 3) */}
       <ApiErrorBanner
         error={apiError}
-        onRetry={() => {
-          setLoading(true)
-          setReloadKey((k) => k + 1)
-        }}
+        onRetry={() => setReloadKey((k) => k + 1)}
       />
 
       {/* 1. Header with Back Button */}
@@ -187,7 +202,7 @@ export default function CollectionRecordPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          aria-label="Back"
+          aria-label={t('common.back')}
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-slate-200/80 shadow-xs hover:bg-slate-50 transition-colors text-slate-700"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -196,7 +211,9 @@ export default function CollectionRecordPage() {
         </button>
 
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Collection record</h1>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            {t('record_detail.title')}
+          </h1>
           <p className="text-xs sm:text-sm font-medium text-slate-400 mt-0.5">{recordNumber}</p>
         </div>
       </div>
@@ -208,10 +225,13 @@ export default function CollectionRecordPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <p className="text-xs sm:text-sm leading-relaxed">
-            <span className="font-bold text-rose-950">Rejected by {reviewerName}.</span>{' '}
+            <span className="font-bold text-rose-950">
+              {reviewerName ? `${t('record_detail.reviewed_by', { name: reviewerName })} · ` : ''}
+              {t('record_detail.rejection_reason')}:
+            </span>{' '}
             <span className="text-rose-900">
               {rejectReason}
-              {!hasRepeatAdvice && ' Please record this load again.'}
+              {!hasRepeatAdvice && ` ${repeatAdvice}.`}
             </span>
           </p>
         </div>
@@ -222,16 +242,24 @@ export default function CollectionRecordPage() {
         {/* Left Column: Evidence */}
         <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-100 p-6 shadow-xs">
           <div className="mb-4">
-            <h2 className="text-base font-bold text-slate-900">Evidence</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Photographed when the load was recorded</p>
+            <h2 className="text-base font-bold text-slate-900">{t('record_detail.evidence')}</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{t('record_detail.evidence_caption')}</p>
           </div>
 
           {/* Scale Display Terminal (matches Figma) or Photo */}
-          {record.photo_url && failedPhotoUrl !== record.photo_url ? (
+          {hasPhotoBlob ? (
+            <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-200">
+              <img
+                ref={blobImgRef}
+                alt={t('record_detail.scale_photo')}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          ) : record.photo_url && failedPhotoUrl !== record.photo_url ? (
             <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden bg-slate-950 flex items-center justify-center border border-slate-200">
               <img
                 src={record.photo_url}
-                alt="Scale photo"
+                alt={t('record_detail.scale_photo')}
                 onError={() => setFailedPhotoUrl(record.photo_url)}
                 className="w-full h-full object-contain"
               />
@@ -243,7 +271,7 @@ export default function CollectionRecordPage() {
                   {record.weight_kg ?? 0}
                 </span>
                 <span className="font-mono text-xs sm:text-sm font-semibold tracking-widest text-[#155e69] mt-2">
-                  kg NET
+                  {t('record_detail.kg_net')}
                 </span>
               </div>
               <div className="w-32 sm:w-40 h-2.5 bg-[#154149] rounded-full mt-4" />
@@ -253,54 +281,56 @@ export default function CollectionRecordPage() {
 
         {/* Right Column: Details */}
         <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 p-6 shadow-xs">
-          <h2 className="text-base font-bold text-slate-900 mb-5">Details</h2>
+          <h2 className="text-base font-bold text-slate-900 mb-5">{t('record_detail.details')}</h2>
 
           <div className="space-y-4 text-sm divide-y divide-slate-100/80">
             <div className="flex items-center justify-between pt-1">
-              <span className="text-slate-400 text-xs sm:text-sm">Record number</span>
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.record_number')}</span>
               <span className="font-bold text-slate-900 text-xs sm:text-sm">{recordNumber}</span>
             </div>
 
             <div className="flex items-center justify-between pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">Boat</span>
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.boat')}</span>
               <span className="text-slate-800 font-medium text-xs sm:text-sm">
                 {boatCode} · {boatName}
               </span>
             </div>
 
             <div className="flex items-center justify-between pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">Weight</span>
-              <span className="font-bold text-slate-900 text-xs sm:text-sm">{record.weight_kg ?? 0} kg</span>
-            </div>
-
-            <div className="flex items-center justify-between pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">Material</span>
-              <span className="text-slate-800 font-medium text-xs sm:text-sm">
-                {formatMaterial(record.material)}
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.weight')}</span>
+              <span className="font-bold text-slate-900 text-xs sm:text-sm">
+                {record.weight_kg ?? 0} {t('common.kg')}
               </span>
             </div>
 
             <div className="flex items-center justify-between pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">Recorded</span>
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.material')}</span>
+              <span className="text-slate-800 font-medium text-xs sm:text-sm">
+                {MATERIAL_KEYS[record.material] ? t(MATERIAL_KEYS[record.material]) : record.material || t('material.mixed')}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-3">
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.recorded')}</span>
               <span className="text-slate-800 font-medium text-xs sm:text-sm">
                 {formatDetailDate(record.display_time || record.recorded_at)}
               </span>
             </div>
 
             <div className="flex items-center justify-between pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">Reviewed</span>
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.reviewed')}</span>
               <span className="text-slate-800 font-medium text-xs sm:text-sm">
                 {formatDetailDate(record.reviewed_at)}
               </span>
             </div>
 
             <div className="flex items-center justify-between pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">Status</span>
+              <span className="text-slate-400 text-xs sm:text-sm">{t('record_detail.status')}</span>
               <StatusBadge status={record.status} />
             </div>
 
             <div className="flex items-start justify-between gap-3 pt-3">
-              <span className="text-slate-400 text-xs sm:text-sm">GPS location</span>
+              <span className="text-slate-400 text-xs sm:text-sm">GPS</span>
               {hasGps ? (
                 <div className="text-right text-xs sm:text-sm">
                   <p className="font-mono text-slate-800">
@@ -315,7 +345,7 @@ export default function CollectionRecordPage() {
                     rel="noreferrer"
                     className="text-xs font-semibold text-teal-700 hover:underline"
                   >
-                    View on map ↗
+                    {t('f3.view_on_map')}
                   </a>
                 </div>
               ) : (
@@ -325,7 +355,7 @@ export default function CollectionRecordPage() {
 
             {record.note && (
               <div className="flex flex-col pt-3">
-                <span className="text-slate-400 text-xs mb-1">Note</span>
+                <span className="text-slate-400 text-xs mb-1">{t('record_detail.note')}</span>
                 <span className="text-slate-800 text-xs italic">{record.note}</span>
               </div>
             )}
