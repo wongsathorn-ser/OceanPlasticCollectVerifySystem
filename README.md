@@ -102,9 +102,15 @@ This project follows the ITCS525 AI policy (**AI Usage Level 4**: AI tools are a
 
 **AI tools used**
 
-| Tool | Provider | Used for |
-|---|---|---|
-| Claude (Cowork) | Anthropic | Generating the repository template (folder structure, FastAPI / SQLModel / PostgreSQL backend skeleton, React / Tailwind / React Router frontend skeleton, Docker Compose, GitHub Actions CI, documentation) and building mock data |
+| Student | Student ID | Feature | AI tool used |
+|---|---|---|---|
+| Wongsathorn Sereephap | 6936258 | F1 Accounts & access, DevOps (PM) | Claude Code (Anthropic) |
+| Masaaki Kato | 6936254 | F2 Record a collection | ChatGPT (OpenAI) |
+| Kaung Khant Paing | 6937058 | F3 Crew home & history | Gemini (Google) |
+| Hein Thant Si Thu | 6938722 | F4 Verification | ChatGPT (OpenAI) |
+| Natthachaimongkol Chayopathum | 6938711 | F5 Fleet & boats | ChatGPT (OpenAI) |
+
+**What the AI tools were used for:** generating the repository template (folder structure, FastAPI / SQLModel / PostgreSQL backend skeleton, React / Tailwind / React Router frontend skeleton, Docker Compose, GitHub Actions CI, documentation) and building mock data. Each member's detailed AI use (date, request, what was used, how it was checked) is logged in [`docs/AI_USAGE.md`](docs/AI_USAGE.md).
 
 **Extent of AI use**
 
