@@ -5,7 +5,7 @@ Status: **approved, in progress.** The schema update for CHG-002/003/004 is done
 | ID | Change | Main owners | Status |
 |---|---|---|---|
 | CHG-001 | Thai and Burmese on crew screens | PM (helper, switcher), F1, F2, F3 | language context + switcher done; F1 screens and crew menu translated. **F2, F3: use `t()`** |
-| CHG-002 | Crew reward per verified kg | PM (helpers), F3, F5 (+ rates admin) | rules done in `app/core/rewards.py`. **F3: earnings on crew home; F5: payout per boat + rates admin** |
+| CHG-002 | Crew reward per verified kg | PM (helpers), F3, F5 (+ rates admin) | rules done in `app/core/rewards.py`; **crew home earnings done** (`GET /api/me/earnings`, 27 Nov). **F5: payout per boat + rates admin; F4: reverse** |
 | CHG-003 | Auto-verification for low-risk records | PM (helpers), F4, F2, F3 | rules done in `app/core/auto_verify.py`. **F2: call after save; F4: spot-check tab + reverse; F3: show label** |
 | CHG-004 | Stronger evidence (2 photos, landing site, duplicate photo) | PM (helpers), F2, F5 (landing sites admin) | checks done in `app/core/evidence.py`. **F2: two photos + call checks; F5: landing sites admin** |
 

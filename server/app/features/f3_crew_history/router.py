@@ -12,6 +12,7 @@ from app.core.database import SessionDep
 from app.features.f1_accounts.dependencies import CurrentUser, require_role
 from app.features.f3_crew_history import service
 from app.features.f3_crew_history.schemas import (
+    CrewEarningsOut,
     CrewMemberDetailOut,
     CrewOverviewItemOut,
     CrewSummaryOut,
@@ -29,6 +30,15 @@ router = APIRouter(prefix="/api", tags=["F3 - Crew home & history"])
 def get_me_summary(user: CurrentUser, db: SessionDep) -> CrewSummaryOut:
     """FR-3.1: Personal dashboard totals with verified and pending separated (BR-2)."""
     return service.get_my_summary(db, user.id)
+
+
+@router.get(
+    "/me/earnings",
+    dependencies=[Depends(require_role("CREW_MEMBER"))],
+)
+def get_me_earnings(user: CurrentUser, db: SessionDep) -> CrewEarningsOut:
+    """CHG-002: earnings this month, earnings to date, and the amount pending verification (THB)."""
+    return service.get_my_earnings(db, user.id)
 
 
 @router.get(
