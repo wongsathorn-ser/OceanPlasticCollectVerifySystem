@@ -1,22 +1,20 @@
 # F2: Record a collection
 
-Owner: Masaaki Kato. Built against the uploaded latest main snapshot (ad696a2), using the PM's existing Record and Photo tables without schema changes.
+Owner: Masaaki Kato. Baseline: uploaded main `97b59ab` (27 Nov 2026), including the PM's D13 schema and CHG-001–004 helpers. This update connects F2 to those shared parts without changing table models or dependencies.
 
 | Screen | Route | Behavior |
 |---|---|---|
-| Boat picker | `/record` | Active boats from PostgreSQL, cached in IndexedDB for offline use |
-| New collection | `/record/details` | Weight, material, note (500 chars), one scale photo, device GPS; local commit before upload |
-| Confirmation | `/record/saved?client_id=UUID` | Distinguishes Saved on this phone from Saved to the server; recoverable after reload |
-| Send | `/send` | Current crew's queue, Send all, sending state, failures retained, per-record results |
+| Boat picker | `/record` | Active boats from F5's DB-backed `/api/boats`, cached for offline use |
+| New collection | `/record/details` | Weight, material, note; PLASTIC photo first, then SCALE photo; fresh device GPS alongside each selection; nearest active site check |
+| Confirmation | `/record/saved?client_id=UUID` | Local/server state, both photos, flags, site and automatic verification result |
+| Send | `/send` | Current owner's queue, retries, errors and confirmed receipts |
 
-Sign in as `mreyes` / `password123` to try recording. Admins and sponsors cannot create records. GPS requires localhost or HTTPS; allow location in the browser. The photo is decoded, resized to at most 1600px, and converted to JPEG on the device. There is no sample-location bypass.
+Sign in as crew `mreyes` / `password123`. Photos are decoded, resized (max 1600 px), converted to JPEG and saved as Blobs with the immutable draft in IndexedDB **before** upload. SCALE is also retained as the `photo` alias for F3's local thumbnail contract. GPS is captured with each photo selection, never refreshed when syncing; SCALE GPS populates the existing Record coordinates. The browser cannot prove when a gallery image was originally taken. There is no mock-GPS fallback.
 
-All records and photo Blobs are committed to IndexedDB first. Sync uses the actual cookie session and each draft's original owner. Network/session failures preserve drafts. Concurrent tabs use Web Locks when available; the server's unique client_id also prevents duplicates. Acknowledgement moves server metadata to a receipt and deletes the draft/photo in one local transaction. The server creates a PENDING record and its Photo in one SQL transaction.
+Both capture locations must be within the configured radius (default 100 m) of an active site. Sites/radius are cached for offline checking; the server repeats its authoritative check using Record GPS and flags outside records instead of discarding evidence. First-time offline use without cached configuration is blocked with a message. The seeded sites are near Phuket: classroom testing elsewhere needs an explicitly synthetic local test site at the device's **real** coordinates; see `docs/F2_IMPLEMENTATION.md`.
 
-The F2 route module starts sync on app opening and the online event; saving, confirmation, and Send all also trigger it. `client/public/f2-sw.js` caches the app shell and resources, never API responses. Open the app online and reload once before trying a completely offline restart so its resources are cached. GPS hardware/location permissions are still required offline.
+F2 uses the PM's shared LanguageContext and sidebar language switcher. New keys have English fallback; empty Thai/Burmese entries need translator review. Records/photos/flags are committed atomically, then the PM's auto-verification helper runs under the same record lock used by F4. A new record starts PENDING and can become VERIFIED under CHG-003.
 
-F5's `/api/boats` is still backed by mock lists in this snapshot. F2 therefore reads the shared Boat table through `/api/records/boats`; coordinate with F5 before switching to its endpoint. F3 home/history and F4 queue remain their owners' integration work; they may still display their own mock data even though F2 really saved to PostgreSQL.
+Failed/expired-session uploads stay on the device. Ownership comes from the actual cookie session. UUID retries return the original record. Legacy one-photo server records remain readable/retryable; **unsent** legacy one-photo drafts are preserved with an explicit review message because their missing evidence cannot be reconstructed.
 
-Translations use existing keys in `client/translations.json` plus new `f2.*` keys. The feature-local adapter falls back to English for empty Thai/Burmese values. It can be replaced by the PM's shared LanguageContext when that is merged. New translations still require translator review.
-
-CHG-004 (two photos, landing sites and flags) and the auto-verification hook are not enabled: latest `docs/CHANGE_REQUESTS.md` assigns their coordinated schema update to the PM. No shared tables or other features were changed in this implementation. See `docs/F2_IMPLEMENTATION.md` for the API and handoff.
+See `offline/README.md`, `docs/F2_IMPLEMENTATION.md` and `docs/F2_VERIFICATION.md`. The small shared guard/evidence fixes are separated for PM review in `docs/F2_SHARED_REVIEW.md`. Manual camera/GPS and real offline reopening remain to be verified on a device.

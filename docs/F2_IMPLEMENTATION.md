@@ -1,51 +1,47 @@
-# F2 implementation and handoff
+# F2 implementation and handoff — 27 November 2026
 
-## Current milestone
+## Source and scope
 
-The original three Figma screens now use actual cookie authentication, PostgreSQL boats, and real record/photo persistence. Offline drafts are written first, retried safely, and recoverable after reload. This change uses the latest uploaded main snapshot (ad696a2); it does not use the earlier CHG-004 mock GPS ZIP.
+Baseline: uploaded main ZIP `97b59ab0f81bd75e3b05c3daaa074353cae3ffa5`. D13 schema and PM helper rules are already present there. This update implements F2's CHG-001 shared-language connection, CHG-003 post-save automatic verification, CHG-004 two-photo capture/checks and the shared offline crew guard fix. No table models, seeds, dependency manifests/locks or Docker configuration are changed.
 
-No table model, seed, shared app entry point, dependency lock file, Docker configuration, or other feature implementation is modified. Existing local databases do not need to be reset for this patch.
+The supplied package separates `01-shared-integration.patch` (four shared files) from `02-f2-evidence.patch` (F2, translations, feature tests and handoff docs). Both are needed for the tested local version. Review the shared patch with the PM and keep its PR separate under CONTRIBUTING; see F2_SHARED_REVIEW.md. Do not claim this patch is already on GitHub.
 
-## Apply on the Mac
+## Apply and start
 
-Stay in `features/record-collections`. Start with a clean working tree and the main update already merged. Apply the patch with `git apply --check` followed by `git apply`. If the check fails, keep the error and compare against newer changes instead of overwriting files. Start the app with `docker compose up --build`.
+Use `features/record-collections` with a clean tree after merging the uploaded main baseline. Check **both** patches before applying either. If `git apply --check` fails, stop and compare against the newer source; do not overwrite newer files. Start with `docker compose up --build` and wait for backend/frontend readiness.
 
-The public additions (`client/public/f2-sw.js`, `client/public/f2-manifest.webmanifest`) are the F2-owned PWA items listed in the offline README. Translation additions append only new `f2.*` keys; existing translations are preserved.
+This patch adds no DB migration. D13 in the underlying main **does** require a one-time local reset if the old schema remains. Follow DATABASE.md and back up the old DB before `docker compose down -v`; that deletes the local volume. Do not repeat a reset if D13 is already installed.
 
-## Try the actual save
+## Classroom demo at actual device coordinates
 
-1. Open `http://localhost:5173/signin`; use crew `mreyes` / `password123`.
-2. Open `/record`, choose a boat from the DB, continue, and allow location access.
-3. Enter a positive weight, select one material, attach a scale photo, and save.
-4. The result initially confirms local storage. With a valid session and signal it then shows **Saved to the server** and a real `REC-...` number. Reloading this URL retrieves the same record, and the photo comes from the protected photo endpoint.
-5. Offline: after opening online and reloading once to warm the app cache, disconnect, reopen `/record`, capture/save, and reload the confirmation. It must remain **Saved on this phone**. Reconnect and use `/send` if needed.
-6. Clear the session or switch to another account while a draft is waiting. The draft must remain for the original account; sign back in as that crew to send it.
+Seeded real sites are near Phuket. Outside those sites the app must block saving, including on campus. To demonstrate locally elsewhere:
 
-An admin cannot create crew records. F3 history/home and F4 verification may still show their own mock lists in this main snapshot; coordinate their DB integration with the feature owners. F2's confirmation and the DB provide actual save verification.
-
-## Existing API contract
-
-- `GET /api/records/boats`: active Boat rows. Added under F2 because F5's existing `/boats` service is still a mock; replace the frontend call once F5 delivers its DB version.
-- `POST /api/records`: required multipart UUID client_id, boat_id, weight_kg, material, photo, latitude, longitude, gps_accuracy_m, recorded_at; optional note and expected_crew_id. User identity comes from the session. 201 new, 200 replay; validation 400, photo too large 413, account/client-id ownership mismatch 409, auth 401/403.
-- `GET /api/records/submissions/{client_id}`: current crew's own confirmation only. This avoids defining F3's `/records/{id}` route.
-- `GET /api/photos/{record_id}`: owner or sponsor only; image bytes never appear in record metadata.
-
-POST commits the immutable Record and Photo atomically, uses `make_record_number(id)`, and returns PENDING for new records. Duplicate IDs are checked before payload validation so a legitimate retry still works after the boat was deactivated. DB uniqueness protects simultaneous retries. Confirmation validates server id, record_number, client_id and crew_id before deleting the local Blob.
-
-## Next coordinated change
-
-Latest `docs/CHANGE_REQUESTS.md` says CHG-001–004 await the team's decision and the PM owns one schema update. CHG-004 needs Photo.kind / sha256 and a composite uniqueness constraint, LandingSite and RecordFlag; F3/F4 also need the resulting evidence contract. When those models land, extend this real upload/queue path with two Blobs and GPS captured for that evidence, nearest-site checks and server flags. Do not enable the older sample-GPS frontend against this one-photo schema.
-
-CHG-001: F2 already reads the central translations file, with English fallback. Its temporary feature-local language adapter can be replaced by the PM's shared context. Empty translations and raw validation-message translations still need the translators/PM.
-
-## Checks
-
-See `docs/F2_VERIFICATION.md` for exact automated checks and environment limits. Standard team commands remain:
+1. Sign in as crew `mreyes` / `password123`, choose a boat, allow location and select a PLASTIC image. The preview displays actual latitude/longitude even if outside the radius.
+2. On the local **dev** stack, register a clearly synthetic classroom test site using those exact displayed coordinates:
 
 ```
-docker compose exec backend python -m pytest -vv
-cd client
-npm ci
-npm run lint
-npm run build
+docker compose exec backend python -m app.features.f2_record_collection.demo_site --latitude REAL_LAT --longitude REAL_LON
 ```
+
+Replace REAL_LAT/REAL_LON with the actual numbers. The helper refuses APP_ENV other than dev. It only upserts `CLASSROOM DEMO (synthetic test site)`; it does not change device coordinates or bypass any check. Never describe this site as a real pier/port. Permanent site administration belongs to the PM/F5.
+
+3. Press the form's Retry button to refresh sites. Capture PLASTIC then SCALE near that real location. For a predictable manual-review demo use 75.123 kg (above the default 50 kg automatic threshold), a material and optional note.
+4. Save, wait for the server confirmation and note the real REC number. Check F3 history, F4 queue and PostgreSQL. Both Photo rows must exist with kind/hash/size. Reusing an identical image on a later record should flag it rather than delete the upload.
+
+## Data flow and API
+
+Active boats come from the now DB-backed F5 `/api/boats`. F2 adds `/api/records/landing-sites` (active coordinates + radius) for online/cache use and `/api/records/location-check` for the shared authoritative distance check. The current form computes the same check locally to support offline capture.
+
+POST `/api/records` multipart replaces the old `photo` field with **plastic_photo** and **scale_photo**. Other fields remain client_id, boat_id, weight_kg, material, note, latitude, longitude, gps_accuracy_m, recorded_at and optional expected_crew_id. Owner comes from the session. Response: 201 new, 200 same-owner retry, 400 validation, 413 oversized image, 409 ownership mismatch, 401/403 auth. Confirmation `/api/records/submissions/{client_id}` is owner-only. Photos `/api/photos/{id}?kind=PLASTIC|SCALE` are owner/sponsor-only and no-store.
+
+F2 captures a fresh GPS fix alongside each photo selection and stores both fixes/times in the local draft. SCALE GPS fills the PM's existing Record fields; no per-photo server GPS columns are invented. Gallery original capture time/authenticity is not attested by browser selection. Retaking PLASTIC invalidates SCALE. Both client locations must pass the cached active-site radius, while the server rechecks Record GPS and flags an outside record that still arrives.
+
+The backend commits Record, both hashed Photo rows, site and flags in one transaction. It then calls the PM's auto-verification helper under the record lock used by F4. New records start PENDING, but a valid CHG-003 rule may return VERIFIED immediately. A transient DB failure in that second stage leaves the committed evidence available for manual review. Other feature UIs and automatic rule definitions remain their owners' work.
+
+## Offline and legacy behavior
+
+IndexedDB commit completes before upload/navigation. Each draft has the original owner and UUID; retries validate the current cookie session and keep failures. Receipt acknowledgement checks server identity before deleting local evidence. SCALE has a `photo` alias so F3 local thumbnails still work. Boats/sites are warmed online and cached. The shared guard allows cached crew hints only on supported crew routes while offline; every server action still requires a real session.
+
+Already-uploaded legacy one-photo records remain readable and UUID-retryable. **Unsent** one-photo drafts cannot satisfy the new contract: the queue retains them and explains the missing evidence. No automatic deletion, fake second photo or ownership change is performed. Team review is needed for those legacy drafts.
+
+Shared LanguageContext provides all F2 translations; blank Thai/Burmese entries fall back to English and need translator review. See F2_VERIFICATION.md for actual checks and remaining manual work.
