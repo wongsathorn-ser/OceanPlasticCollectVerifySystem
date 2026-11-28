@@ -1,19 +1,26 @@
-# F2 verification - 20 November 2026
+# F2 verification — 27 November 2026
 
-Source baseline: the uploaded latest ZIP, main snapshot ad696a2, after the original F2 preview was merged.
+Source: uploaded main `97b59ab` plus the two review patches in this package.
 
 ## Passed
 
-- **54 backend tests** (the complete existing suite plus new F2 tests) against actual PostgreSQL **16.2**. Includes real session login, DB boat selection, atomic Record/Photo persistence, status PENDING and session-derived crew_id, UTC-equivalent timestamp, UUID retries after deactivation/review, simultaneous retries, validation, MIME/signature/size checks, photo access permissions, offline-owner mismatch, and absence of edit/delete endpoints.
-- **11 isolated JavaScript checks** using the real F2 modules, an in-memory IndexedDB implementation and mocked network responses. Covers local Blob commit before upload, reopening local storage, failed sends, lost acknowledgements, session expiry, account separation, server validation errors, acknowledgement validation, overlapping triggers, interrupted SENDING recovery, and service-worker cache/exclusion/fallback logic. These checks are logic verification, not a browser/device simulation.
-- **Live HTTP persistence check**: start FastAPI, log in, upload, fetch photo, stop/restart the backend process, retrieve the same record/photo with the same persisted session, retry the UUID and confirm only one DB record. PostgreSQL remains running through the backend restart.
-- **Frontend lint** completed with no new F2 warnings. One pre-existing F5 `BoatsPage.jsx` immutability warning remains untouched.
-- **Frontend production build** passed with Vite 8.3.5.
+- **100 backend tests**, the complete suite, against actual PostgreSQL **16.2**. Includes previous F1/F3/F4/shared rules and F2 session identity, atomic two-photo persistence, hash storage, idempotency/concurrent UUID retry, validation/access controls, legacy server retries, automatic verification/spot selection, duplicate/outside flags, no-active-site handling and the dev-only synthetic-site helper.
+- **Live HTTP flow** with real cookies and PostgreSQL: crew upload two images → F3 history → protected images → same-UUID retry → F4 pending queue → sponsor verify → F3 record detail. The created PLASTIC and SCALE rows both had non-null SHA-256. Test images/coordinates were synthetic test input, not physical GPS verification.
+- **15 isolated JavaScript checks** using real F2 modules, an in-memory IndexedDB implementation, mocked network/cache objects and SSR. Covers Blob transaction completion, reopen/read, failed sends/lost acknowledgement, account/session protection, acknowledgement identity, overlapping triggers, interrupted sends, service-worker cache exclusions, offline crew guards, exact radius boundary and preservation of legacy queued evidence. These checks are simulations, not an actual device/browser test.
+- **3 repository-reproducible Node checks**: cached-crew SSR routes, denied online/admin hint access, full-precision location boundary. Run from repo root: `node client/src/features/f2_record_collection/tests/verify-offline.mjs`. These overlap the isolated guard/math checks; they are not three additional browser scenarios.
+- Frontend `npm run lint` passed with no new F2 warnings. The existing F5 BoatsPage immutability warning remains. `npm run build` passed (Vite 8.3.5).
 
-## Environment and limits
+Environment: Python 3.12.14, FastAPI 0.141.1, SQLModel 0.0.50, Node 24.22.3, PostgreSQL 16.2. Project CI uses Python 3.13 / Node 22; run its normal checks. No dependency files changed. Docker image builds were not executed here.
 
-Checks ran with Python 3.12.14, FastAPI 0.141.1, SQLModel 0.0.50, Node 24.22.3 and PostgreSQL 16.2. The project CI uses Python 3.13 and Node 22 with its lock files; rerun the normal CI commands there. No dependency files were changed.
+## Owner's device checklist (not yet claimed as passed)
 
-Chromium could not launch in this execution environment because its local socket operation was denied. The browser flow was therefore **not** verified end to end. Actual browser GPS permission, camera behavior, mobile layout, installation and completely offline app reopening still need the manual checks in F2_IMPLEMENTATION.md. Mock/sample GPS is not added to the app.
+1. Apply both patches on the latest compatible branch. Start the Docker stack; install D13 once if necessary, with a verified DB backup before destructive reset.
+2. Crew sign-in → DB boat → two photo previews and actual GPS → within configured site radius → save → real REC number and both images on confirmation/history/detail.
+3. Outside-radius capture must block save. Denied location must show a recovery message. On campus use only the explicitly labelled synthetic local demo site at actual GPS, never fake device coordinates.
+4. Choose PLASTIC, then SCALE; retaking PLASTIC must clear SCALE. Test camera and gallery behavior on the target phone. Check narrow screen layout and language switching; missing translations should fall back to English.
+5. With app/reference data warmed online, prepare evidence. Stop backend only, save, confirm it remains on the phone, start backend and Send all. Check exactly one DB record and two photos.
+6. Separately test **actual offline reopening**: load online/reload to warm service worker, disconnect device, close/reopen the crew route, capture/save if GPS hardware can supply a fix, reopen receipt, reconnect and send. SSR/storage tests do not establish this behavior.
+7. Expire session/switch account during pending send. Original draft must remain and another user must not upload it. Legacy one-photo local drafts must remain with their explanatory error.
+8. Restart the stack without `-v` and verify the same persisted record/photos. Save actual Web screenshots and PR/checks screenshots for the report.
 
-Docker image builds were not run in this environment. The DB schema is unchanged, so this patch does not require deleting the local volume.
+A new browser/service-worker installation may need an online reload before updated resources are available. Never clear IndexedDB to refresh the app while unsent evidence is present.

@@ -29,7 +29,7 @@ def distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     p1, p2 = math.radians(lat1), math.radians(lat2)
     dp, dl = p2 - p1, math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * EARTH_RADIUS_M * math.asin(math.sqrt(a))
+    return 2 * EARTH_RADIUS_M * math.asin(math.sqrt(min(1.0, max(0.0, a))))
 
 
 def nearest_landing_site(session: Session, latitude: float, longitude: float) -> tuple[LandingSite | None, float]:
@@ -77,7 +77,7 @@ def check_evidence(session: Session, record: Record) -> list[RecordFlag]:
         record.landing_site_id = site.id
     else:
         flags.append(RecordFlag(record_id=record.id, flag="OUTSIDE_LANDING_SITE",
-                                detail=f"{round(d)} m from the nearest landing site"))
+                                detail=(f"{round(d)} m from the nearest landing site" if math.isfinite(d) else "No active landing site is configured.")))
 
     for photo in session.exec(select(Photo).where(Photo.record_id == record.id)).all():
         earlier = session.exec(
