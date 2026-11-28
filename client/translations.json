@@ -1212,76 +1212,76 @@
   "f2.evidence.subtitle": {
     "eng_word": "Record the load, then capture the plastic and scale photos with GPS.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဝန်ကို မှတ်တမ်းတင်ပြီးပါ။ ပြီးလျှင် ပလတ်စတစ်နှင့် ချိန်ခွင်အလေးချိန်ဓာတ်ပုံများကို GPS နှင့်အတူ ရိုက်ယူပါ။"
   },
   "f2.evidence.retake_gps": {
     "eng_word": "Allow location access, then retake the photo to capture its GPS.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "တည်နေရာ ရယူရန် ခွင့်ပြုပါ၊ ပြီးလျှင် ဓာတ်ပုံကို ပြန်ရိုက်ကူးပြီး GPS ကို ရယူပါ။"
   },
   "f2.evidence.distance": {
     "eng_word": "{site}: {meters} m away (limit {radius} m).",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "{site} - အကွာအဝေး {meters} မီတာ (ကန့်သတ်ချက် {radius} မီတာ)"
   },
   "f2.evidence.no_sites": {
     "eng_word": "No active landing sites are available. Ask an administrator to configure a site, then retry.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "လက်ရှိ အသုံးပြုနိုင်သည့် သတ်မှတ်ထားသောနေရာ မရှိပါ။ စီမံခန့်ခွဲသူ တစ်ဦးအား တည်နေရာကို သတ်မှတ်ပေးရန် အသိပေးပြီးနောက် ထပ်မံကြိုးစားကြည့်ပါ။"
   },
   "f2.evidence.location_ok": {
     "eng_word": "Location accepted.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "တည်နေရာကို လက်ခံပြီးပါပြီ။"
   },
   "f2.evidence.location_blocked": {
     "eng_word": "Move within the permitted radius of a registered landing site and retake both photos before saving.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ခွင့်ပြုထားသော အကွာအဝေးအတွင်းသို့ ရွှေ့ပြီး မှတ်တမ်းမတင်မီ ဓာတ်ပုံနှစ်ပုံကို ပြန်ရိုက်ပါ။"
   },
   "f2.evidence.cached_sites": {
     "eng_word": "Using landing sites saved on this phone. The server checks them again when you send.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဤဖုန်းတွင် သိမ်းဆည်းထားသည့် သတ်မှတ်ထားသောနေရာများကိုသာ အသုံးပြုနေပါသည်။ မှတ်တမ်းပေးပို့သည့်အခါ ဆာဗာမှ ထပ်မံစစ်ဆေးပါမည်။"
   },
   "f2.evidence.site_rule": {
     "eng_word": "Both photos must be captured within {radius} m of an active landing site.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဓာတ်ပုံနှစ်ပုံလုံးသည် အသုံးပြုနိုင်သည့် သတ်မှတ်ထားသည့်နေရာ {radius} မီတာအတွင်းမှသာ ရိုက်ကူးရမည်။"
   },
   "f2.evidence.capture_rule": {
     "eng_word": "Each photo captures a fresh GPS fix. The scale-photo position is stored with the record; uploading later does not recapture your location.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဓာတ်ပုံတစ်ပုံချင်းစီသည် ရိုက်ကူးချိန်ရှိ GPS တည်နေရာအချက်အလက် ကိုသာရယူပါသည်။ ဓာတ်ပုံရိုက်ကူးချိန်က တည်နေရာအချက်အလက်ကို မှတ်တမ်းနှင့်အတူ သိမ်းဆည်းထားမည်ဖြစ်ပြီး၊ ဆာဗာသို့ တင်ပို့သည့်အခါတွင် တည်နေရာအချက်အလက်ကို ထပ်မံရယူခြင်း ပြုလုပ်မည်မဟုတ်ပါ။"
   },
   "f2.evidence.plastic_first": {
     "eng_word": "First capture the plastic photo at an accepted landing site. Retaking it also requires a new scale photo.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ပထမဦးစွာ ခွင့်ပြုထားသောနေရာရှိ ပလတ်စတစ်ပစ္စည်း၏ ဓာတ်ပုံကို ရိုက်ယူပါ။ ဓာတ်ပုံကို ပြန်လည်ရိုက်ကူးရန် လိုအပ်ပါက အလေးချိန်တိုင်းထားသော ဓာတ်ပုံအသစ်တစ်ခုကိုပါ လိုအပ်ပါသည်။"
   },
   "f2.evidence.save_hint": {
     "eng_word": "Both photos and their capture locations are saved on this phone before upload.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဓာတ်ပုံများနှင့် ၎င်းတို့ကို ရိုက်ကူးခဲ့သည့် နေရာများကို ဆာဗာသို့မပို့မိ ဤဖုန်းထဲတွင် သိမ်းဆည်းထားသည်။"
   },
   "f2.evidence.flags": {
     "eng_word": "Evidence warnings",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "သက်သေအထောက်အထားဆိုင်ရာ သတိပေးချက်များ"
   },
   "f2.evidence.legacy": {
     "eng_word": "This record was saved before two-photo recording. Its original photo stays on this device; ask the team to review this legacy record.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဤမှတ်တမ်းသည် ဓာတ်ပုံနှစ်ပုံမပါဘဲ သိမ်းဆည်းထားခြင်း ဖြစ်သည်။ မူလဓာတ်ပုံမှာ ဤစက်ပစ္စည်းပေါ်တွင် သိမ်းထားဆဲဖြစ်ပြီး၊ ဤမှတ်တမ်းကို ပြန်လည်စစ်ဆေးပေးရန် အဖွဲ့ထံ တောင်းဆိုပါ။"
   },
   "server_error.f2_photos": {
     "eng_word": "Both plastic and scale photos are required.",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ပလတ်စတစ်နှင့် ချိန်ခွင် အလေးချိန်ဓာတ်ပုံနှစ်ခုလုံး လိုအပ်ပါသည်။"
   },
   "f2.evidence.capturing": {
     "eng_word": "Capturing photo and GPS…",
     "th_word": "",
-    "burmese_word": ""
+    "burmese_word": "ဓာတ်ပုံနှင့် GPS ကို မှတ်တမ်းတင်နေပါသည်…"
   }
 }
