@@ -1,15 +1,20 @@
 """F2 validation and atomic record/photo storage using the PM's existing schema."""
 import math
+import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlmodel import Session, select
 
-from app.features.f2_record_collection.models import MATERIALS, Photo, Record, make_record_number
-from app.features.f2_record_collection.schemas import RecordOut
-from app.features.f5_fleet_boats.models import Boat
+from app.core.evidence import add_photo, check_evidence
+from app.core.auto_verify import apply_auto_verify
+from app.features.f2_record_collection.models import MATERIALS, PHOTO_KINDS, Photo, Record, RecordFlag, make_record_number
+from app.features.f2_record_collection.schemas import FlagOut, PhotoOut, RecordOut
+from app.features.f5_fleet_boats.models import Boat, LandingSite
+
+logger = logging.getLogger(__name__)
 
 MAX_PHOTO_BYTES = 5 * 1024 * 1024
 PHOTO_TYPES = {"image/jpeg", "image/png", "image/webp"}
@@ -31,12 +36,18 @@ def existing_record(db: Session, client_id: str, crew_id: int) -> Record | None:
 
 def record_out(db: Session, record: Record) -> RecordOut:
     boat = db.get(Boat, record.boat_id)
-    values = {key: getattr(record, key) for key in RecordOut.model_fields if hasattr(record, key)}
+    values = {key: getattr(record, key) for key in RecordOut.model_fields if hasattr(record, key) and key != "flags"}
     for key in ('recorded_at', 'created_at'):
         values[key] = values[key].astimezone(timezone.utc)
+    site = db.get(LandingSite, record.landing_site_id) if record.landing_site_id else None
+    photos = db.exec(select(Photo.kind, Photo.size_bytes).where(Photo.record_id == record.id).order_by(Photo.kind)).all()
+    flags = db.exec(select(RecordFlag).where(RecordFlag.record_id == record.id).order_by(RecordFlag.id)).all()
     return RecordOut(
         **values,
-        boat_code=boat.code, boat_name=boat.name, photo_url=f"/api/photos/{record.id}",
+        boat_code=boat.code, boat_name=boat.name, photo_url=f"/api/photos/{record.id}?kind=SCALE",
+        landing_site_name=site.name if site else None,
+        photos=[PhotoOut(kind=kind, size_bytes=size, url=f"/api/photos/{record.id}?kind={kind}") for kind, size in photos],
+        flags=[FlagOut(flag=f.flag, detail=f.detail) for f in flags],
     )
 
 
@@ -73,8 +84,8 @@ def validate_photo(data: bytes, content_type: str | None) -> str:
     return detected
 
 
-def create_record(db: Session, crew_id: int, client_id: str, fields: dict, data: bytes, content_type: str) -> tuple[Record, bool]:
-    """Record and photo commit together; UNIQUE client_id also covers concurrent retries."""
+def create_record(db: Session, crew_id: int, client_id: str, fields: dict, photos: dict[str, tuple[bytes, str]]) -> tuple[Record, bool]:
+    """Commit both photos and evidence flags atomically, then invoke the PM auto-verify rule."""
     existing = existing_record(db, client_id, crew_id)
     if existing:
         return existing, False
@@ -102,7 +113,10 @@ def create_record(db: Session, crew_id: int, client_id: str, fields: dict, data:
         recorded_at = recorded_at.astimezone(timezone.utc)
     except ValueError:
         raise HTTPException(400, "recorded_at must include a date, time and time zone.")
-    content_type = validate_photo(data, content_type)
+    if set(photos) != set(PHOTO_KINDS):
+        raise HTTPException(400, "Both plastic and scale photos are required.")
+    for data, content_type in photos.values():
+        validate_photo(data, content_type)
     record = Record(
         client_id=client_id, boat_id=boat_id, crew_id=crew_id,
         weight_kg=weight, material=material, note=note or None,
@@ -113,7 +127,10 @@ def create_record(db: Session, crew_id: int, client_id: str, fields: dict, data:
         db.add(record)
         db.flush()
         record.record_number = make_record_number(record.id)
-        db.add(Photo(record_id=record.id, content_type=content_type, size_bytes=len(data), data=data))
+        for kind in PHOTO_KINDS:
+            data, content_type = photos[kind]
+            add_photo(db, record, kind, data, content_type)
+        check_evidence(db, record)
         db.commit()
         db.refresh(record)
     except IntegrityError:
@@ -122,4 +139,18 @@ def create_record(db: Session, crew_id: int, client_id: str, fields: dict, data:
         if existing:
             return existing, False
         raise
+    # Match F4's row lock, so a manual decision and auto-verification cannot
+    # overwrite one another. The helper commits on success; commit also
+    # releases the lock when its rule does not pass.
+    try:
+        db.refresh(record, with_for_update=True)
+        apply_auto_verify(db, record)
+        db.commit()
+        db.refresh(record)
+    except SQLAlchemyError:
+        # The complete evidence transaction has already committed. A transient
+        # auto-check DB failure leaves a normal PENDING record for manual review.
+        db.rollback()
+        db.refresh(record)
+        logger.exception("F2 auto-verification failed for record %s; evidence is saved", record.id)
     return record, True

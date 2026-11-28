@@ -12,9 +12,11 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import Session, select
 
 from app.core.clock import thailand_day_start, thailand_month_start
+from app.core.rewards import crew_earnings
 from app.features.f1_accounts.models import User
 from app.features.f2_record_collection.models import STATUSES, Record, make_record_number
 from app.features.f3_crew_history.schemas import (
+    CrewEarningsOut,
     CrewBoatWorkOut,
     CrewMemberDetailOut,
     CrewOverviewItemOut,
@@ -98,6 +100,12 @@ def _to_record_item(db: Session, record: Record) -> RecordListItemOut:
         photo_url=f"/api/photos/{record.id}",
         note=record.note,
     )
+
+
+def get_my_earnings(db: Session, crew_id: int) -> CrewEarningsOut:
+    """CHG-002: earnings this month, to date and pending. Rejected records earn
+    nothing and a reversed record drops out automatically (rewards are calculated)."""
+    return CrewEarningsOut(**crew_earnings(db, crew_id))
 
 
 def get_my_summary(db: Session, crew_id: int) -> CrewSummaryOut:

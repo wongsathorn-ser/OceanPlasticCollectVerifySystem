@@ -15,6 +15,15 @@ class CrewSummaryOut(BaseModel):
     pending_count: int
 
 
+class CrewEarningsOut(BaseModel):
+    """CHG-002: the signed-in crew member's rewards in THB (app/core/rewards.py)."""
+
+    this_month: float  # VERIFIED records collected this month (Thailand time)
+    to_date: float  # all VERIFIED records
+    pending: float  # PENDING records, at their collection-date rate, not paid yet
+    currency: str = "THB"
+
+
 class RecordListItemOut(BaseModel):
     """Summary row for a collection record in My history / recent records."""
 

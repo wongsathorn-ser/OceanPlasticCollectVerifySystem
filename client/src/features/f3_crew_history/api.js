@@ -8,6 +8,11 @@ import { apiFetch } from '../../shared/api/client.js'
 export const getMySummary = () => apiFetch('/me/summary')
 
 /**
+ * CHG-002: crew member's earnings in THB { this_month, to_date, pending, currency }.
+ */
+export const getMyEarnings = () => apiFetch('/me/earnings')
+
+/**
  * Get crew member's collection records, newest first.
  * @param {string} [status] - Optional filter: PENDING | VERIFIED | REJECTED
  * Spec: FR-3.2

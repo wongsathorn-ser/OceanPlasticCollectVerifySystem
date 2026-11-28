@@ -1,6 +1,7 @@
-"""F2 responses. Photo bytes are served separately from record metadata."""
+"""F2 responses; image bytes are fetched from protected photo endpoints."""
 from datetime import datetime
 from pydantic import BaseModel
+
 
 class BoatOption(BaseModel):
     id: int
@@ -8,6 +9,38 @@ class BoatOption(BaseModel):
     name: str
     capacity_kg: float
     active: bool
+
+
+class SiteOut(BaseModel):
+    id: int
+    name: str
+    kind: str
+    latitude: float
+    longitude: float
+
+
+class LandingConfig(BaseModel):
+    sites: list[SiteOut]
+    radius_m: float
+
+
+class LocationCheck(BaseModel):
+    within_radius: bool
+    distance_m: float | None
+    radius_m: float
+    site: SiteOut | None
+
+
+class FlagOut(BaseModel):
+    flag: str
+    detail: str | None
+
+
+class PhotoOut(BaseModel):
+    kind: str
+    size_bytes: int
+    url: str
+
 
 class RecordOut(BaseModel):
     id: int
@@ -27,3 +60,10 @@ class RecordOut(BaseModel):
     status: str
     created_at: datetime
     photo_url: str
+    photos: list[PhotoOut]
+    landing_site_id: int | None
+    landing_site_name: str | None
+    flags: list[FlagOut]
+    auto_verified: bool
+    verified_rule: str | None
+    spot_check: bool

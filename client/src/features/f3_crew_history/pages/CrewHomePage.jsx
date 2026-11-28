@@ -1,9 +1,9 @@
 // F3 · Crew home & history - owner: Kaung Khant Paing
-// Figma: 03 Personal dashboard | Spec: FR-3.1, BR-2
+// Figma: 03 Personal dashboard | Spec: FR-3.1, BR-2 | CHG-002: earnings (this month, to date, pending)
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { LanguageContext } from '../../../shared/i18n/languageContext.js'
-import { getMyRecords, getMySummary } from '../api.js'
+import { getMyEarnings, getMyRecords, getMySummary } from '../api.js'
 import ApiErrorBanner from '../components/ApiErrorBanner.jsx'
 import RecordCard from '../components/RecordCard.jsx'
 import { DEFAULT_RECORDS } from '../mockData.js'
@@ -26,12 +26,18 @@ const DEFAULT_SUMMARY = {
   pending_count: 2,
 }
 
+// CHG-002: amounts in THB, at most 2 decimals
+function formatThb(amount, language) {
+  return Number(amount ?? 0).toLocaleString(language === 'en' ? 'en-US' : language, { maximumFractionDigits: 2 })
+}
+
 export default function CrewHomePage() {
   const { user, offline } = useF3User()
   const navigate = useNavigate()
-  const { t } = useContext(LanguageContext)
+  const { t, language } = useContext(LanguageContext)
 
   const [summary, setSummary] = useState(EMPTY_SUMMARY)
+  const [earnings, setEarnings] = useState(null) // CHG-002; null = not loaded (offline or error)
   const [remoteRecords, setRemoteRecords] = useState([])
   const [apiError, setApiError] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
@@ -79,6 +85,14 @@ export default function CrewHomePage() {
             message: err.detail || err.message || 'Unable to connect to server.',
           }
         }
+      }
+
+      // 1b. CHG-002 earnings (only shown when the server answers)
+      try {
+        const earningsData = await getMyEarnings()
+        if (!ignore) setEarnings(earningsData)
+      } catch {
+        if (!ignore) setEarnings(null)
       }
 
       // 2. Fetch recent records from API
@@ -233,6 +247,39 @@ export default function CrewHomePage() {
           </p>
         </div>
       </div>
+
+      {/* 3b. CHG-002 Earnings: only VERIFIED records are paid; pending is not paid yet */}
+      {earnings && (
+        <section aria-labelledby="earnings-title" className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xs">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <h2 id="earnings-title" className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                {t('chg002_rewards.earnings_this_month')}
+              </h2>
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-700">
+                {t('chg002_rewards.amount_thb', { amount: formatThb(earnings.this_month, language) })}
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                {t('chg002_rewards.earnings_to_date')}
+              </h3>
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">
+                {t('chg002_rewards.amount_thb', { amount: formatThb(earnings.to_date, language) })}
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                {t('chg002_rewards.pending_amount')}
+              </h3>
+              <p className="mt-2 text-2xl sm:text-3xl font-extrabold text-amber-700">
+                {t('chg002_rewards.amount_thb', { amount: formatThb(earnings.pending, language) })}
+              </p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-slate-400">{t('chg002_rewards.no_reward_rejected')}</p>
+        </section>
+      )}
 
       {/* 4. Action Banner */}
       <div className="rounded-2xl bg-teal-900 p-6 text-white shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

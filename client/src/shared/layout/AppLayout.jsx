@@ -5,7 +5,7 @@
 // Figma is desktop-only; on phones the layout must stack into one column (NFR-13).
 import { useContext, useState } from 'react'
 import { Navigate, NavLink, Outlet, useNavigate } from 'react-router'
-import { AuthContext } from '../../features/f1_accounts/authContext.js'
+import { useOfflineCrewSession } from './useOfflineCrewSession.js'
 import { LanguageContext } from '../i18n/languageContext.js'
 import LanguageSwitcher from '../i18n/LanguageSwitcher.jsx'
 import { NAV_BY_ROLE, ROLE_KEYS, ROLE_LABELS } from './navConfig.js'
@@ -17,7 +17,7 @@ function navLinkClass({ isActive }) {
 }
 
 export default function AppLayout() {
-  const { user, checking, signOut } = useContext(AuthContext)
+  const { user, checking, signOut } = useOfflineCrewSession()
   const { t } = useContext(LanguageContext)
   const navigate = useNavigate()
   const [signingOut, setSigningOut] = useState(false)

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../f1_accounts/authContext.js'
-import { fetchCollectionBoats } from './api.js'
+import { fetchCollectionBoats, fetchLandingSites } from './api.js'
 import { getMeta, listDrafts, setMeta } from './offline/localDb.js'
 
 const LAST_CREW = 'ocean-f2-last-crew'
@@ -73,4 +73,33 @@ export function useQueue(ownerId) {
     return () => { active = false; window.removeEventListener('f2-queue-change', load); window.removeEventListener('focus', load) }
   }, [ownerId])
   return { drafts, error }
+}
+
+
+export function useLandingSites() {
+  const [config, setConfig] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [cached, setCached] = useState(false)
+  const [error, setError] = useState('')
+  const [version, setVersion] = useState(0)
+  useEffect(() => {
+    let active = true
+    async function load() {
+      setLoading(true)
+      try {
+        const value = await fetchLandingSites()
+        if (!Array.isArray(value.sites) || !Number.isFinite(value.radius_m) || value.radius_m <= 0) {
+          throw new Error('The landing-site configuration could not be loaded.')
+        }
+        await setMeta('landing-sites', value).catch(() => {})
+        if (active) { setConfig(value); setCached(false); setError('') }
+      } catch (failure) {
+        const value = await getMeta('landing-sites').catch(() => null)
+        if (active) { setConfig(value); setCached(Boolean(value)); setError(failure.message) }
+      } finally { if (active) setLoading(false) }
+    }
+    load()
+    return () => { active = false }
+  }, [version])
+  return { config, loading, cached, error, retry: () => setVersion((v) => v + 1) }
 }
